@@ -6,7 +6,7 @@ export const siteConfig = {
   social: {
     email: "sc.frey@aol.de",
     linkedin: "https://www.linkedin.com/in/sebastian-frey",
-    github: "https://www.github.com/Sebastian-Frey",
+    github: "https://www.github.com/Sebastian--Frey",
   },
   aboutMe:
     "I work at the intersection of machine learning, LLMs, and real-world business problems, with a strong focus on applied modeling, forecasting, and production-ready systems. My background combines deep technical work with business-critical use cases. As a Data Scientist, I design and implement advanced ML models end to end — from raw, large-scale data pipelines to evaluation, validation, and deployment — while keeping a clear view on how models are actually used for decision-making.",
@@ -40,7 +40,14 @@ export const siteConfig = {
       description:
         "Designed and deployed a model covering 1.8M+ records with 300+ features, providing base price estimations for 80% of the Austrian market via a real-time production API.",
       link: "#",
-      skills: ["Time Series", "R-Shiny", "Mixed Models", "Data Quality Monitoring"],
+      skills: ["Time Series", "R", "Ensemble Models", "Data Quality Monitoring","API-Hosting"],
+    },
+    {
+      name: "BiasBreaker",
+      description:
+        "Leveraged LLMs to create source-aware unbiased news articles from idiologically oposed sources (Fox vs. CNN). Works independet of language and topic to create a news dashboard of unbiased information",
+      link: "https://github.com/Sebastian-Frey/BiasBreaker", 
+      skills: ["OpenAI-API", "LLMs", "Streamlit", "Dashboards"],
     },
   ],
   experience: [
