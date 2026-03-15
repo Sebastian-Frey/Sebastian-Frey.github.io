@@ -49,6 +49,13 @@ export const siteConfig = {
       link: "projects/biasbreaker", 
       skills: ["OpenAI-API", "LLMs", "Streamlit", "Dashboards"],
     },
+    {
+      name: "SentinelLTV",
+      description:
+        "An end-to-end ML pipeline for high-throughput churn prediction. Features automated preprocessing, GridSearch hyperparameter optimization for XGBoost, and production-grade validation strategies to forecast customer lifetime value (LTV).",
+      link: "projects/sentinel-ltv",
+      skills: ["XGBoost", "Scikit-Learn", "Hyperparameter-Tuning", "ML-Ops"],
+    }
   ],
   experience: [
     {
