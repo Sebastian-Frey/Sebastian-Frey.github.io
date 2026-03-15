@@ -1,0 +1,106 @@
+---
+import { siteConfig } from "../../config";
+// Layout import (if you have a default layout, wrap the content in it)
+---
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>BiasBreaker | Sebastian Frey</title>
+</head>
+<body class="bg-[#fafafa] text-gray-900 font-mono antialiased">
+    <nav class="border-b border-gray-200 p-6 flex justify-between items-center max-w-6xl mx-auto">
+        <a href="/" class="text-sm font-bold hover:text-blue-600 transition-colors">← CD .. /HOME</a>
+        <div class="flex gap-4">
+            <a href="https://github.com/Sebastian-Frey/BiasBreaker" target="_blank" class="text-xs border border-black px-3 py-1.5 rounded hover:bg-black hover:text-white transition">GITHUB_SOURCE</a>
+            <a href="https://biasbreaker.streamlit.app" target="_blank" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 transition font-bold">LIVE_DEMO</a>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl mx-auto p-8 md:py-16">
+        <header class="mb-16">
+            <h1 class="text-5xl md:text-7xl font-black mb-6 tracking-tighter uppercase">BiasBreaker</h1>
+            <p class="text-xl md:text-2xl text-gray-600 leading-relaxed max-w-3xl mb-8">
+                Demonstrating practical AI-product thinking: Automated scraping, NPOV synthesis, and persistent storage for polarized media analysis.
+            </p>
+            <div class="flex flex-wrap gap-3">
+                {["GPT-4o", "BeautifulSoup4", "Streamlit", "NPOV Prompting", "JSON Persistence"].map(tag => (
+                    <span class="bg-gray-100 border border-gray-300 text-[10px] px-2 py-1 rounded uppercase font-bold text-gray-500">{tag}</span>
+                ))}
+            </div>
+        </header>
+
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-24 items-center">
+            <div>
+                <h2 class="text-2xl font-bold mb-4">01. The Interface</h2>
+                <p class="text-gray-600 mb-6">
+                    A clean Streamlit UI designed for binary article comparison. The system accepts two URLs (e.g., CNN and Fox News) and initializes a multi-stage background process.
+                </p>
+                <ul class="space-y-2 text-sm text-gray-500">
+                    <li>• Dynamic URL validation</li>
+                    <li>• Real-time progress feedback</li>
+                    <li>• Multi-page navigation for saved history</li>
+                </ul>
+            </div>
+            <div class="rounded-lg shadow-xl overflow-hidden border border-gray-200">
+                <img src="/images/projects/bb-input.png" alt="BiasBreaker Input Stage" class="w-full h-auto" />
+            </div>
+        </section>
+
+        <section class="mb-24">
+            <h2 class="text-2xl font-bold mb-8 text-center uppercase tracking-widest">02. The Extraction Engine</h2>
+            <div class="bg-gray-900 rounded-xl p-8 text-blue-400 overflow-x-auto mb-8">
+                <pre class="text-xs md:text-sm"><code>{`# Core Extraction Logic (scraper_cnn.py)
+def get_article_text_from_urls(url1, url2):
+    # Desktop User-Agent bypass for bot detection
+    # BeautifulSoup4 selective block extraction
+    # langdetect -> OpenAI translation (if non-English)
+    # White-space normalization & paragraph preservation`}</code></pre>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <img src="/images/projects/bb-loading.png" alt="Scraping in progress" class="rounded-lg border border-gray-200" />
+                <div class="flex flex-col justify-center">
+                    <p class="text-gray-600 leading-relaxed italic">
+                        "The challenge was maintaining paragraph boundaries and semantic context during the normalization phase to ensure the LLM could distinguish between factual claims and editorial framing."
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-24 bg-white border border-gray-200 p-8 md:p-12 rounded-2xl shadow-sm">
+            <h2 class="text-2xl font-bold mb-6">03. NPOV Synthesis (GPT-4o)</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-12">
+                <div class="lg:col-span-2">
+                    <p class="text-gray-600 mb-6">
+                        I engineered a specific "Neutral Point of View" (NPOV) prompt to handle journalistic synthesis. Instead of a generic summary, the model must:
+                    </p>
+                    <ul class="space-y-4 font-bold text-sm">
+                        <li class="flex gap-2"><span>✅</span> Identify shared factual consensus.</li>
+                        <li class="flex gap-2"><span>✅</span> Clearly attribute outlet-specific claims.</li>
+                        <li class="flex gap-2"><span>✅</span> Highlight discrepancies (counts, timelines).</li>
+                    </ul>
+                </div>
+                <div class="lg:col-span-3">
+                    <img src="/images/projects/bb-output.png" alt="Synthesized Article Output" class="rounded shadow-2xl border border-gray-100" />
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-24">
+             <h2 class="text-2xl font-bold mb-4">04. Closing the Loop: Persistence</h2>
+             <p class="text-gray-600 mb-8 max-w-2xl">
+                To move beyond a transient script, I implemented a storage layer using local <code>.txt</code> files for the unified articles and a <code>saved_articles.json</code> index to enable a history gallery.
+             </p>
+             <img src="/images/projects/bb-persistence.png" alt="Saved articles dashboard" class="w-full rounded-xl border border-gray-300" />
+        </section>
+
+        <footer class="text-center py-20 border-t border-gray-200">
+            <h3 class="text-xl font-bold mb-4 uppercase">Next Implementation</h3>
+            <p class="text-gray-500 max-w-xl mx-auto mb-8">
+                Following this end-to-end pattern, my next project focuses on <strong>HPC Infrastructure</strong>—scaling pipelines to handle 1.6B+ observations for deep-tech research.
+            </p>
+            <a href="/" class="text-blue-600 font-bold hover:underline italic">RETURN_TO_PORTFOLIO</a>
+        </footer>
+    </main>
+</body>
+</html>

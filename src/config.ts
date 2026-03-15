@@ -46,7 +46,7 @@ export const siteConfig = {
       name: "BiasBreaker",
       description:
         "Leveraged LLMs to create source-aware unbiased news articles from idiologically oposed sources (Fox vs. CNN). Works independet of language and topic to create a news dashboard of unbiased information",
-      link: "https://github.com/Sebastian-Frey/BiasBreaker", 
+      link: "projects/biasbreaker", 
       skills: ["OpenAI-API", "LLMs", "Streamlit", "Dashboards"],
     },
   ],
