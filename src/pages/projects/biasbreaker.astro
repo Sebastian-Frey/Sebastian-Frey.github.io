@@ -1,105 +1,126 @@
 ---
-import { siteConfig } from "../../config";
-// Layout import (if you have a default layout, wrap the content in it)
+// Import your layout or styles here
 ---
 
 <html lang="en">
 <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BiasBreaker | Sebastian Frey</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 </head>
-<body class="bg-[#fafafa] text-gray-900 font-mono antialiased">
-    <nav class="border-b border-gray-200 p-6 flex justify-between items-center max-w-6xl mx-auto">
-        <a href="/" class="text-sm font-bold hover:text-blue-600 transition-colors">← CD .. /HOME</a>
-        <div class="flex gap-4">
-            <a href="https://github.com/Sebastian-Frey/BiasBreaker" target="_blank" class="text-xs border border-black px-3 py-1.5 rounded hover:bg-black hover:text-white transition">GITHUB_SOURCE</a>
-            <a href="https://biasbreaker.streamlit.app" target="_blank" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 transition font-bold">LIVE_DEMO</a>
+<body class="bg-white text-slate-900 font-sans antialiased selection:bg-blue-100">
+    <div class="fixed inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem]"></div>
+
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center font-mono">
+            <a href="/" class="group flex items-center gap-2 text-sm font-bold tracking-tighter">
+                <span class="text-slate-400 group-hover:text-blue-600 transition-colors">←</span>
+                <span>SEBASTIAN FREY</span>
+            </a>
+            
+            <div class="flex items-center gap-6">
+                <a href="https://linkedin.com/in/sebastian-frey" target="_blank" class="text-slate-400 hover:text-blue-600 transition-colors">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                </a>
+                <a href="https://github.com/Sebastian-Frey/BiasBreaker" target="_blank" class="text-slate-400 hover:text-blue-600 transition-colors">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.042-1.416-4.042-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                </a>
+                <a href="https://biasbreaker.streamlit.app" target="_blank" class="px-5 py-2.5 bg-blue-600 text-white text-[11px] font-black tracking-[0.2em] rounded-full hover:bg-slate-900 transition-all shadow-xl shadow-blue-200 uppercase">
+                    Launch Demo
+                </a>
+            </div>
         </div>
     </nav>
 
-    <main class="max-w-5xl mx-auto p-8 md:py-16">
-        <header class="mb-16">
-            <h1 class="text-5xl md:text-7xl font-black mb-6 tracking-tighter uppercase">BiasBreaker</h1>
-            <p class="text-xl md:text-2xl text-gray-600 leading-relaxed max-w-3xl mb-8">
-                Demonstrating practical AI-product thinking: Automated scraping, NPOV synthesis, and persistent storage for polarized media analysis.
+    <main class="max-w-5xl mx-auto px-6 py-24">
+        <header class="mb-32">
+            <h1 class="text-7xl md:text-9xl font-black tracking-tighter text-slate-900 mb-8 leading-none">
+                Bias<span class="text-blue-600">Breaker.</span>
+            </h1>
+            <p class="text-2xl text-slate-500 leading-relaxed max-w-3xl mb-12">
+                A Streamlit application engineered to neutralize news polarization by synthesizing balanced summaries from ideologically opposed sources[cite: 96].
             </p>
-            <div class="flex flex-wrap gap-3">
-                {["GPT-4o", "BeautifulSoup4", "Streamlit", "NPOV Prompting", "JSON Persistence"].map(tag => (
-                    <span class="bg-gray-100 border border-gray-300 text-[10px] px-2 py-1 rounded uppercase font-bold text-gray-500">{tag}</span>
+            <div class="flex flex-wrap gap-2">
+                {["GPT-4o", "BeautifulSoup4", "NPOV Prompting", "JSON Persistence", "Streamlit"].map(tag => (
+                    <span class="px-3 py-1 bg-slate-100 text-slate-500 font-mono text-[10px] rounded border border-slate-200">{tag}</span>
                 ))}
             </div>
         </header>
 
-        <section class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-24 items-center">
-            <div>
-                <h2 class="text-2xl font-bold mb-4">01. The Interface</h2>
-                <p class="text-gray-600 mb-6">
-                    A clean Streamlit UI designed for binary article comparison. The system accepts two URLs (e.g., CNN and Fox News) and initializes a multi-stage background process.
-                </p>
-                <ul class="space-y-2 text-sm text-gray-500">
-                    <li>• Dynamic URL validation</li>
-                    <li>• Real-time progress feedback</li>
-                    <li>• Multi-page navigation for saved history</li>
-                </ul>
-            </div>
-            <div class="rounded-lg shadow-xl overflow-hidden border border-gray-200">
-                <img src="/images/projects/bb-input.png" alt="BiasBreaker Input Stage" class="w-full h-auto" />
-            </div>
-        </section>
-
-        <section class="mb-24">
-            <h2 class="text-2xl font-bold mb-8 text-center uppercase tracking-widest">02. The Extraction Engine</h2>
-            <div class="bg-gray-900 rounded-xl p-8 text-blue-400 overflow-x-auto mb-8">
-                <pre class="text-xs md:text-sm"><code>{`# Core Extraction Logic (scraper_cnn.py)
-def get_article_text_from_urls(url1, url2):
-    # Desktop User-Agent bypass for bot detection
-    # BeautifulSoup4 selective block extraction
-    # langdetect -> OpenAI translation (if non-English)
-    # White-space normalization & paragraph preservation`}</code></pre>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <img src="/images/projects/bb-loading.png" alt="Scraping in progress" class="rounded-lg border border-gray-200" />
-                <div class="flex flex-col justify-center">
-                    <p class="text-gray-600 leading-relaxed italic">
-                        "The challenge was maintaining paragraph boundaries and semantic context during the normalization phase to ensure the LLM could distinguish between factual claims and editorial framing."
-                    </p>
+        <section class="mb-32">
+            <h2 class="font-mono text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-12 text-center">System Architecture</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mt-16">
+                <div class="relative group">
+                    <div class="absolute -inset-1 bg-blue-600 rounded-2xl blur opacity-10 group-hover:opacity-20 transition"></div>
+                    <img src="/images/projects/bb-output.png" alt="BiasBreaker Output" class="relative rounded-2xl border border-slate-200 shadow-2xl" />
+                </div>
+                <div class="flex flex-col justify-center space-y-8">
+                    <div class="border-l-2 border-blue-600 pl-8">
+                        <h3 class="font-bold text-xl mb-2">Factual Synthesis</h3>
+                        <p class="text-slate-500 text-sm leading-relaxed">Identifying points of factual agreement while clearly attributing outlet-specific claims to their respective sources.</p>
+                    </div>
+                    <div class="border-l-2 border-slate-200 pl-8">
+                        <h3 class="font-bold text-xl mb-2">Hallucination Control</h3>
+                        <p class="text-slate-500 text-sm leading-relaxed">Ensuring the LLM preserves the nuance of reported differences (e.g., timelines or counts) without fabricating middle-ground facts.</p>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section class="mb-24 bg-white border border-gray-200 p-8 md:p-12 rounded-2xl shadow-sm">
-            <h2 class="text-2xl font-bold mb-6">03. NPOV Synthesis (GPT-4o)</h2>
-            <div class="grid grid-cols-1 lg:grid-cols-5 gap-12">
-                <div class="lg:col-span-2">
-                    <p class="text-gray-600 mb-6">
-                        I engineered a specific "Neutral Point of View" (NPOV) prompt to handle journalistic synthesis. Instead of a generic summary, the model must:
-                    </p>
-                    <ul class="space-y-4 font-bold text-sm">
-                        <li class="flex gap-2"><span>✅</span> Identify shared factual consensus.</li>
-                        <li class="flex gap-2"><span>✅</span> Clearly attribute outlet-specific claims.</li>
-                        <li class="flex gap-2"><span>✅</span> Highlight discrepancies (counts, timelines).</li>
-                    </ul>
+        <section class="prose prose-slate max-w-none border-t border-slate-100 pt-32">
+            <h2 class="text-4xl font-black tracking-tight mb-12">Technical Documentation</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-16">
+                <div class="lg:col-span-7 space-y-16">
+                    <div>
+                        <h3 class="text-xl font-bold uppercase tracking-widest text-blue-600 mb-6 font-mono">01 / Deep Dive</h3>
+                        <p>The system utilizes a custom NLP pipeline to scrape, clean, and synthesize news content:</p>
+                        <ul class="list-none space-y-4 pl-0 text-sm">
+                            <li class="flex gap-4"><strong>Scrape & Clean:</strong> Using <code>BeautifulSoup4</code> to extract article text and normalize whitespace while preserving paragraph boundaries.</li>
+                            <li class="flex gap-4"><strong>Translation:</strong> Non-English content is auto-detected via <code>langdetect</code> and translated via OpenAI before synthesis.</li>
+                            <li class="flex gap-4"><strong>Persistence:</strong> Each synthesis is stored as a <code>.txt</code> file with a <code>saved_articles.json</code> lightweight index.</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-bold uppercase tracking-widest text-blue-600 mb-6 font-mono">02 / File Structure</h3>
+                        <pre class="bg-slate-900 text-blue-300 p-6 rounded-xl font-mono text-xs overflow-x-auto">
+<code>{`app.py                   # Streamlit UI & Save logic
+scraper_cnn.py           # Scraping, Translation, GPT Prompting
+pages/saved_articles.py  # Historical analysis gallery
+articles/                # Storage for unified .txt articles
+saved_articles.json      # Metadata index with timestamps`}</code></pre>
+                    </div>
                 </div>
-                <div class="lg:col-span-3">
-                    <img src="/images/projects/bb-output.png" alt="Synthesized Article Output" class="rounded shadow-2xl border border-gray-100" />
+
+                <div class="lg:col-span-5 space-y-12 bg-slate-50 p-8 rounded-3xl border border-slate-100">
+                    <h3 class="text-lg font-bold font-mono uppercase tracking-widest border-b border-slate-200 pb-4">Dev Setup</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 mb-2 font-mono uppercase">Installation</p>
+                            <code class="text-xs bg-white border border-slate-200 px-3 py-2 rounded block">pip install streamlit beautifulsoup4 openai langdetect</code>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 mb-2 font-mono uppercase">Execution</p>
+                            <code class="text-xs bg-white border border-slate-200 px-3 py-2 rounded block">streamlit run app.py</code>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-8 border-t border-slate-200">
+                        <h4 class="font-bold mb-4">Ethics & roadmap</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed">This tool aims to improve transparency, not eliminate bias. Future iterations will visualize the agreement graph and add inline citations.</p>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section class="mb-24">
-             <h2 class="text-2xl font-bold mb-4">04. Closing the Loop: Persistence</h2>
-             <p class="text-gray-600 mb-8 max-w-2xl">
-                To move beyond a transient script, I implemented a storage layer using local <code>.txt</code> files for the unified articles and a <code>saved_articles.json</code> index to enable a history gallery.
-             </p>
-             <img src="/images/projects/bb-persistence.png" alt="Saved articles dashboard" class="w-full rounded-xl border border-gray-300" />
-        </section>
-
-        <footer class="text-center py-20 border-t border-gray-200">
-            <h3 class="text-xl font-bold mb-4 uppercase">Next Implementation</h3>
-            <p class="text-gray-500 max-w-xl mx-auto mb-8">
-                Following this end-to-end pattern, my next project focuses on <strong>HPC Infrastructure</strong>—scaling pipelines to handle 1.6B+ observations for deep-tech research.
-            </p>
-            <a href="/" class="text-blue-600 font-bold hover:underline italic">RETURN_TO_PORTFOLIO</a>
+        <footer class="mt-40 pt-20 border-t border-slate-100 flex justify-between items-center">
+             <a href="/" class="font-mono text-[10px] font-black text-slate-400 hover:text-blue-600 transition-colors uppercase tracking-[0.3em]">
+                ← Back to core portfolio
+             </a>
+             <p class="font-mono text-[10px] text-slate-300">EST. 2025</p>
         </footer>
     </main>
 </body>
