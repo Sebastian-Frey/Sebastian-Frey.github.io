@@ -3,62 +3,108 @@ import MainLayout from "../../layouts/MainLayout.astro";
 ---
 
 <MainLayout title="BiasBreaker">
-  <div class="max-w-5xl mx-auto px-6 py-24">
+  <nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center font-mono text-[11px] uppercase tracking-widest">
+      <a href="/" class="font-bold hover:text-blue-600 transition-colors">← Sebastian Frey</a>
+      <div class="hidden md:flex gap-8">
+        <a href="/#about" class="hover:text-blue-600 transition-colors">About</a>
+        <a href="/#projects" class="text-blue-600 font-bold">Projects</a>
+        <a href="/#experience" class="hover:text-blue-600 transition-colors">Experience</a>
+        <a href="/#education" class="hover:text-blue-600 transition-colors">Education</a>
+      </div>
+      <div class="flex items-center gap-4">
+         <a href="https://github.com/Sebastian-Frey/BiasBreaker" target="_blank" class="text-slate-400 hover:text-slate-900 transition-colors">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.042-1.416-4.042-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+         </a>
+         <button id="demo-trigger" class="px-4 py-2 bg-blue-600 text-white rounded-full font-bold hover:bg-slate-900 transition-all shadow-lg shadow-blue-100 cursor-pointer">DEMO</button>
+      </div>
+    </div>
+  </nav>
+<div id="modal-overlay" class="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-md hidden items-center justify-center opacity-0 transition-opacity duration-300">
+    <div class="bg-white p-10 rounded-3xl shadow-2xl max-w-sm w-full mx-6 transform scale-95 transition-transform duration-300 border border-slate-100" id="modal-content">
+      <div class="text-center">
+        <div class="w-20 h-20 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 transform rotate-3">
+          <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        </div>
+        <h3 class="text-2xl font-black tracking-tighter mb-2 uppercase">Coming Soon</h3>
+        <p class="text-slate-500 text-xs mb-8 font-mono leading-relaxed">The live demo environment is undergoing maintenance. Access will be restored shortly.</p>
+        <button id="close-modal" class="w-full py-4 bg-slate-900 text-white text-[10px] font-black tracking-[0.2em] rounded-xl hover:bg-blue-600 transition-all uppercase">Return to Project</button>
+      </div>
+    </div>
+  </div>
+  <main class="max-w-5xl mx-auto px-6 py-32">
     <header class="mb-32">
-      <h1 class="text-7xl md:text-8xl font-black tracking-tighter mb-8 uppercase">
-        Bias<span class="text-blue-600">Breaker.</span>
+      <h1 class="text-8xl md:text-[10rem] font-black tracking-tighter mb-8 leading-none">
+        BIAS<span class="text-blue-600">BREAKER.</span>
       </h1>
-      <p class="text-2xl text-slate-500 leading-relaxed max-w-3xl mb-12">
+      <p class="text-2xl text-slate-500 leading-relaxed font-mono max-w-3xl">
         An end-to-end AI product designed to neutralize news polarization by synthesizing balanced summaries from ideologically opposed sources.
       </p>
-      <div class="flex flex-wrap gap-2 font-mono">
-        {["GPT-4o", "BeautifulSoup4", "NPOV Prompting", "JSON Persistence"].map(tag => (
-          <span class="px-3 py-1 bg-slate-100 text-slate-500 text-[10px] rounded border border-slate-200 uppercase">{tag}</span>
-        ))}
-      </div>
     </header>
 
     <section class="mb-40">
-      <h2 class="font-mono text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-12 text-center underline decoration-blue-600">System Pipeline</h2>
-      
-      
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mt-16">
-        <div class="group relative rounded-3xl border border-slate-200 overflow-hidden shadow-2xl bg-white">
-          <img src="/images/projects/bb-output.png" alt="Synthesized Output" class="w-full h-auto" />
-        </div>
-        <div class="flex flex-col justify-center space-y-10">
-          <div>
-            <h3 class="font-bold text-xl mb-3 uppercase tracking-tight">01. Automated Extraction</h3>
-            <p class="text-slate-500 text-sm leading-relaxed font-light">
-              Uses <strong>BeautifulSoup4</strong> to isolate core article content from commercial boilerplate and ads.
-            </p>
+      <h2 class="font-mono text-[20px] font-black text-slate-400 uppercase tracking-[0.3em] mb-12 text-center underline decoration-blue-600 underline-offset-8">Article Reconciliation</h2>
+      <div class="bg-slate-950 rounded-3xl p-8 md:p-12 shadow-2xl border border-slate-800">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          <div class="lg:col-span-7 rounded-xl overflow-hidden border border-slate-700 shadow-inner">
+             <img src="/images/projects/bb-output.png" alt="Fact Synthesis Preview" class="w-full h-auto" />
           </div>
-          <div>
-             <h3 class="font-bold text-xl mb-3 uppercase tracking-tight">02. NPOV Synthesis</h3>
-             <p class="text-slate-500 text-sm leading-relaxed font-light">
-               Engineered <strong>GPT-4o</strong> prompting to perform cross-article factual reconciliation and explicit source attribution.
-             </p>
+          <div class="lg:col-span-5 space-y-8">
+            <div class="font-mono">
+              <span class="text-blue-500 text-xs font-bold block mb-2 uppercase tracking-widest">// NLP Logic</span>
+              <h3 class="text-white text-xl font-bold mb-4">Cross-Reference Mapping</h3>
+              <p class="text-slate-400 text-sm leading-relaxed">
+                The core engine performs <strong>factual overlap identification</strong>, isolating claims appearing in both sources (e.g., CNN and Fox News) while flagging unique ideological perspectives for neutral attribution.
+              </p>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
+                <span class="text-blue-400 text-[10px] font-bold block mb-1 uppercase">Input A</span>
+                <span class="text-white text-xs font-mono">Center-Left</span>
+              </div>
+              <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
+                <span class="text-red-400 text-[10px] font-bold block mb-1 uppercase">Input B</span>
+                <span class="text-white text-xs font-mono">Center-Right</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="max-w-4xl mx-auto border-t border-slate-100 pt-24 prose prose-slate prose-sm lg:prose-base">
-       <h2 class="text-3xl font-black tracking-tight mb-12 uppercase">Technical Implementation</h2>
-       
-       <h3 class="font-mono text-blue-600 uppercase tracking-widest text-xs mb-4">File Structure</h3>
-       <pre class="bg-slate-900 text-blue-300 p-8 rounded-2xl text-xs leading-relaxed">
-<code>{`BiasBreaker/
-├── app.py               # Streamlit Dashboard & Persistence
-├── scraper_cnn.py       # Scraper & GPT Synthesis Logic
-├── articles/            # Storage for unified .txt articles
-└── saved_articles.json  # Metadata index for history gallery`}</code></pre>
-
-       <h3 class="font-mono text-blue-600 uppercase tracking-widest text-xs mt-16 mb-4">Core Engine</h3>
-       <p class="text-slate-600">
-         The pipeline ensures that non-English articles are detected via <code>langdetect</code> and translated via OpenAI before being passed to the synthesis chain.
-       </p>
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-40">
+       <div class="space-y-4">
+         <img src="/images/projects/bb-input.png" class="rounded-xl border border-slate-100 shadow-lg" alt="Input UI" />
+         <p class="font-mono text-[16px] text-slate-400 uppercase tracking-tighter font-bold">01. URL Ingestion</p>
+       </div>
+       <div class="space-y-4">
+         <img src="/images/projects/bb-loading.png" class="rounded-xl border border-slate-100 shadow-lg" alt="Processing UI" />
+         <p class="font-mono text-[16px] text-slate-400 uppercase tracking-tighter font-bold">02. NPOV Chain Processing</p>
+       </div>
+       <div class="space-y-4">
+         <img src="/images/projects/bb-persistence.png" class="rounded-xl border border-slate-100 shadow-lg" alt="Saved History" />
+         <p class="font-mono text-[16px] text-slate-400 uppercase tracking-tighter font-bold">03. Persistent Storage</p>
+       </div>
     </section>
-  </div>
+
+    <section class="max-w-4xl mx-auto border-t border-slate-100 pt-24 font-mono">
+       <div class="grid grid-cols-1 md:grid-cols-12 gap-16">
+         <div class="md:col-span-4 uppercase">
+            <h3 class="text-slate-400 text-[10px] font-black tracking-widest mb-8">Technical Stack</h3>
+            <ul class="text-xs space-y-3 font-bold">
+              <li class="flex justify-between"><span>Engine</span> <span class="text-blue-600">GPT-4o</span></li>
+              <li class="flex justify-between"><span>Extraction</span> <span class="text-blue-600">BS4</span></li>
+              <li class="flex justify-between"><span>Frontend</span> <span class="text-blue-600">Streamlit</span></li>
+              <li class="flex justify-between"><span>Database</span> <span class="text-blue-600">JSON/Txt</span></li>
+            </ul>
+         </div>
+         <div class="md:col-span-8">
+            <h3 class="text-slate-400 text-[10px] font-black tracking-widest mb-8 uppercase">Key Engineering Insight</h3>
+            <p class="text-slate-600 text-sm leading-relaxed mb-6">
+              Unlike generic news aggregators, BiasBreaker enforces <strong>source attribution</strong> at the sentence level. This prevents the LLM from hallucinating a "middle ground" and instead forces it to report exactly which outlet made which claim.
+            </p>
+         </div>
+       </div>
+    </section>
+  </main>
 </MainLayout>
