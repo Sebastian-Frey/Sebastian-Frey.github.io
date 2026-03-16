@@ -25,7 +25,7 @@ export const siteConfig = {
       name: "LLM-Augmented GNN Forecasting (Master's Thesis)",
       description:
         "Developed a novel spatiotemporal framework using LLM-derived semantic graphs to predict Cost-Per-Click (CPC) auctions.Proved that explicit relational structures improve medium-to-long-term robustness over foundation models.",
-      link: "#", // Replace with your GitHub link or PDF path
+      link: "https://arxiv.org/abs/2603.13059", // Replace with your GitHub link or PDF path
       skills: ["PyTorch", "GNNs", "LLMs", "Sentence-BERT", "DuckDB"],
     },
     {
