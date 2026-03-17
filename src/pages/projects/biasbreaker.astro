@@ -72,19 +72,68 @@ import MainLayout from "../../layouts/MainLayout.astro";
       </div>
     </section>
 
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-40">
-       <div class="space-y-4">
-         <img src="/images/projects/bb-input.png" class="rounded-xl border border-slate-100 shadow-lg" alt="Input UI" />
-         <p class="font-mono text-[16px] text-slate-400 uppercase tracking-tighter font-bold">01. URL Ingestion</p>
-       </div>
-       <div class="space-y-4">
-         <img src="/images/projects/bb-loading.png" class="rounded-xl border border-slate-100 shadow-lg" alt="Processing UI" />
-         <p class="font-mono text-[16px] text-slate-400 uppercase tracking-tighter font-bold">02. NPOV Chain Processing</p>
-       </div>
-       <div class="space-y-4">
-         <img src="/images/projects/bb-persistence.png" class="rounded-xl border border-slate-100 shadow-lg" alt="Saved History" />
-         <p class="font-mono text-[16px] text-slate-400 uppercase tracking-tighter font-bold">03. Persistent Storage</p>
-       </div>
+    <section class="mb-40">
+      <div class="relative overflow-hidden rounded-3xl bg-slate-950 border border-slate-800 shadow-2xl">
+        <!-- Slides -->
+        <div id="slideshow" class="flex transition-transform duration-500 ease-in-out">
+          <div class="slide min-w-full flex flex-col">
+            <div class="relative overflow-hidden">
+              <img src="/images/projects/bb-input.png" class="w-full h-auto" alt="Input UI" />
+            </div>
+            <div class="px-8 py-6 flex items-center justify-between">
+              <div>
+                <span class="text-blue-500 font-mono text-[10px] font-bold uppercase tracking-[0.3em]">Step 01</span>
+                <p class="text-white font-black text-lg uppercase tracking-tight mt-1">URL Ingestion</p>
+              </div>
+              <span class="font-mono text-slate-600 text-[10px]">01 / 03</span>
+            </div>
+          </div>
+          <div class="slide min-w-full flex flex-col">
+            <div class="relative overflow-hidden">
+              <img src="/images/projects/bb-loading.png" class="w-full h-auto" alt="Processing UI" />
+            </div>
+            <div class="px-8 py-6 flex items-center justify-between">
+              <div>
+                <span class="text-blue-500 font-mono text-[10px] font-bold uppercase tracking-[0.3em]">Step 02</span>
+                <p class="text-white font-black text-lg uppercase tracking-tight mt-1">NPOV Chain Processing</p>
+              </div>
+              <span class="font-mono text-slate-600 text-[10px]">02 / 03</span>
+            </div>
+          </div>
+          <div class="slide min-w-full flex flex-col">
+            <div class="relative overflow-hidden">
+              <img src="/images/projects/bb-persistence.png" class="w-full h-auto" alt="Saved History" />
+            </div>
+            <div class="px-8 py-6 flex items-center justify-between">
+              <div>
+                <span class="text-blue-500 font-mono text-[10px] font-bold uppercase tracking-[0.3em]">Step 03</span>
+                <p class="text-white font-black text-lg uppercase tracking-tight mt-1">Persistent Storage</p>
+              </div>
+              <span class="font-mono text-slate-600 text-[10px]">03 / 03</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="absolute top-0 left-0 right-0 h-[2px] bg-slate-800">
+          <div id="progress-bar" class="h-full bg-blue-600 transition-all duration-500" style="width: 33.33%"></div>
+        </div>
+
+        <!-- Nav arrows -->
+        <button id="prev-btn" class="absolute left-4 top-1/2 -translate-y-8 w-10 h-10 bg-white/10 hover:bg-blue-600 backdrop-blur-sm rounded-full flex items-center justify-center transition-all text-white border border-white/10">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <button id="next-btn" class="absolute right-4 top-1/2 -translate-y-8 w-10 h-10 bg-white/10 hover:bg-blue-600 backdrop-blur-sm rounded-full flex items-center justify-center transition-all text-white border border-white/10">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+
+        <!-- Dot indicators -->
+        <div class="absolute bottom-5 right-8 flex gap-2">
+          <button class="dot w-1.5 h-1.5 rounded-full bg-blue-500 transition-all" data-index="0"></button>
+          <button class="dot w-1.5 h-1.5 rounded-full bg-slate-600 transition-all" data-index="1"></button>
+          <button class="dot w-1.5 h-1.5 rounded-full bg-slate-600 transition-all" data-index="2"></button>
+        </div>
+      </div>
     </section>
 
     <section class="max-w-4xl mx-auto border-t border-slate-100 pt-24 font-mono">
@@ -107,4 +156,56 @@ import MainLayout from "../../layouts/MainLayout.astro";
        </div>
     </section>
   </main>
+
+  <script>
+    // Slideshow
+    const slideshow = document.getElementById('slideshow')!;
+    const progressBar = document.getElementById('progress-bar')!;
+    const dots = document.querySelectorAll<HTMLElement>('.dot');
+    let current = 0;
+    const total = 3;
+
+    function goTo(index: number) {
+      current = (index + total) % total;
+      slideshow.style.transform = `translateX(-${current * 100}%)`;
+      progressBar.style.width = `${((current + 1) / total) * 100}%`;
+      dots.forEach((d, i) => {
+        d.classList.toggle('bg-blue-500', i === current);
+        d.classList.toggle('bg-slate-600', i !== current);
+      });
+    }
+
+    document.getElementById('prev-btn')!.addEventListener('click', () => goTo(current - 1));
+    document.getElementById('next-btn')!.addEventListener('click', () => goTo(current + 1));
+    dots.forEach(d => d.addEventListener('click', () => goTo(Number(d.dataset.index))));
+  </script>
+
+  <script>
+    const trigger = document.getElementById('demo-trigger')!;
+    const overlay = document.getElementById('modal-overlay')!;
+    const closeBtn = document.getElementById('close-modal')!;
+    const modalContent = document.getElementById('modal-content')!;
+
+    function openModal() {
+      overlay.classList.remove('hidden');
+      overlay.classList.add('flex');
+      requestAnimationFrame(() => {
+        overlay.classList.remove('opacity-0');
+        modalContent.classList.remove('scale-95');
+      });
+    }
+
+    function closeModal() {
+      overlay.classList.add('opacity-0');
+      modalContent.classList.add('scale-95');
+      setTimeout(() => {
+        overlay.classList.remove('flex');
+        overlay.classList.add('hidden');
+      }, 300);
+    }
+
+    trigger.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+  </script>
 </MainLayout>

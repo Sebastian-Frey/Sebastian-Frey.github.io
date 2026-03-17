@@ -12,7 +12,7 @@ import MainLayout from "../../layouts/MainLayout.astro";
         <a href="/#experience" class="hover:text-blue-600 transition-colors">Experience</a>
       </div>
       <div class="flex items-center gap-4">
-         <button class="px-4 py-2 bg-slate-900 text-white rounded-full font-bold hover:bg-blue-600 transition-all shadow-lg text-[10px]">LIVE DASHBOARD</button>
+         <button id="demo-trigger" class="px-4 py-2 bg-slate-900 text-white rounded-full font-bold hover:bg-blue-600 transition-all shadow-lg text-[10px]">LIVE DASHBOARD</button>
       </div>
     </div>
   </nav>
@@ -108,4 +108,46 @@ import MainLayout from "../../layouts/MainLayout.astro";
         </div>
     </section>
   </main>
+
+  <div id="modal-overlay" class="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-md hidden items-center justify-center opacity-0 transition-opacity duration-300">
+    <div class="bg-white p-10 rounded-3xl shadow-2xl max-w-sm w-full mx-6 transform scale-95 transition-transform duration-300 border border-slate-100" id="modal-content">
+      <div class="text-center">
+        <div class="w-20 h-20 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 transform rotate-3">
+          <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        </div>
+        <h3 class="text-2xl font-black tracking-tighter mb-2 uppercase">Coming Soon</h3>
+        <p class="text-slate-500 text-xs mb-8 font-mono leading-relaxed">The live dashboard is currently unavailable. Access will be restored shortly.</p>
+        <button id="close-modal" class="w-full py-4 bg-slate-900 text-white text-[10px] font-black tracking-[0.2em] rounded-xl hover:bg-blue-600 transition-all uppercase">Return to Project</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const trigger = document.getElementById('demo-trigger')!;
+    const overlay = document.getElementById('modal-overlay')!;
+    const closeBtn = document.getElementById('close-modal')!;
+    const modalContent = document.getElementById('modal-content')!;
+
+    function openModal() {
+      overlay.classList.remove('hidden');
+      overlay.classList.add('flex');
+      requestAnimationFrame(() => {
+        overlay.classList.remove('opacity-0');
+        modalContent.classList.remove('scale-95');
+      });
+    }
+
+    function closeModal() {
+      overlay.classList.add('opacity-0');
+      modalContent.classList.add('scale-95');
+      setTimeout(() => {
+        overlay.classList.remove('flex');
+        overlay.classList.add('hidden');
+      }, 300);
+    }
+
+    trigger.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+  </script>
 </MainLayout>
