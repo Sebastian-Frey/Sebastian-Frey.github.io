@@ -1,0 +1,407 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+---
+
+<MainLayout title="Clustering Comparison">
+
+  <!-- ── NAV ── -->
+  <nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center font-mono text-[11px] uppercase tracking-widest">
+      <a href="/" class="font-bold hover:text-blue-600 transition-colors">← Sebastian Frey</a>
+      <div class="hidden md:flex gap-8">
+        <a href="/#about"      class="hover:text-blue-600 transition-colors">About</a>
+        <a href="/#projects"   class="text-blue-600 font-bold">Projects</a>
+        <a href="/#experience" class="hover:text-blue-600 transition-colors">Experience</a>
+        <a href="/#education"  class="hover:text-blue-600 transition-colors">Education</a>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="https://github.com/Sebastian-Frey" target="_blank" class="text-slate-400 hover:text-slate-900 transition-colors">
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.042-1.416-4.042-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        </a>
+        <button id="demo-trigger" class="px-4 py-2 bg-slate-900 text-white rounded-full font-bold hover:bg-blue-600 transition-all shadow-lg text-[10px]">NOTEBOOK</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── CINEMATIC HERO ── -->
+  <section class="relative h-[70vh] min-h-[560px] flex items-end overflow-hidden">
+    <!-- GIF background -->
+    <img
+      src="/images/projects/clustering/output/latent_space_journey.gif"
+      alt="3D UMAP latent space rotation"
+      class="absolute inset-0 w-full h-full object-cover object-center scale-105"
+    />
+    <!-- Strong full overlay so text is always readable -->
+    <div class="absolute inset-0 bg-slate-950/75"></div>
+    <!-- Bottom fade into the metrics ribbon -->
+    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
+    <!-- Left-side fade for text legibility -->
+    <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/20 to-transparent"></div>
+
+    <!-- Hero text -->
+    <div class="relative z-10 max-w-6xl mx-auto px-6 pb-16 w-full">
+      <div class="text-blue-400 font-mono text-[10px] font-bold mb-5 uppercase tracking-[0.5em]">
+        Unsupervised Manifold Learning · Financial Fraud Detection
+      </div>
+      <h1 class="text-6xl md:text-8xl font-black tracking-tighter leading-none uppercase text-white mb-6">
+        Latent<span class="text-blue-500">Discovery.</span>
+      </h1>
+      <p class="text-slate-300 font-mono text-sm max-w-xl leading-relaxed">
+        Comparing clustering philosophies — <strong class="text-white">K-Means</strong>, <strong class="text-white">GMM</strong>, and <strong class="text-white">HDBSCAN</strong> — on a 28-dimensional financial dataset projected into 3D latent space via UMAP to isolate fraudulent transaction topologies.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── METRICS RIBBON ── -->
+  <section class="bg-slate-950 border-b border-slate-800">
+    <div class="max-w-6xl mx-auto px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-0 font-mono divide-x divide-slate-800">
+      <div class="px-8 first:pl-0">
+        <span class="block text-[10px] text-slate-500 uppercase tracking-[0.3em] mb-2">Dimensions</span>
+        <span class="text-3xl font-black text-white">28 <span class="text-blue-500">→</span> 3D</span>
+      </div>
+      <div class="px-8">
+        <span class="block text-[10px] text-slate-500 uppercase tracking-[0.3em] mb-2">Noise Rate</span>
+        <span class="text-3xl font-black text-white">0.9<span class="text-blue-500">%</span></span>
+      </div>
+      <div class="px-8">
+        <span class="block text-[10px] text-slate-500 uppercase tracking-[0.3em] mb-2">Algorithm</span>
+        <span class="text-3xl font-black text-white">HDB<span class="text-blue-500">SCAN</span></span>
+      </div>
+      <div class="px-8">
+        <span class="block text-[10px] text-slate-500 uppercase tracking-[0.3em] mb-2">Best Silhouette</span>
+        <span class="text-3xl font-black text-white">0.76<span class="text-blue-500">↑</span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="bg-white">
+
+    <!-- ── MASTER DASHBOARD ── -->
+    <section class="max-w-6xl mx-auto px-6 py-28">
+      <div class="mb-12">
+        <div class="text-blue-600 font-mono text-xs font-bold mb-3 uppercase tracking-[0.4em]">Full Pipeline Overview</div>
+        <h2 class="text-5xl font-black tracking-tighter uppercase">Clustering Dashboard</h2>
+        <p class="text-slate-500 font-mono text-sm mt-4 max-w-3xl leading-relaxed">
+          Master 2-row grid: 2D UMAP projections coloured by each method alongside ground-truth fraud overlay (top), and model selection diagnostics including elbow curve, silhouette comparison, and GMM BIC/AIC curve (bottom).
+        </p>
+      </div>
+      <div class="rounded-2xl overflow-hidden border border-slate-100 shadow-2xl">
+        <img
+          src="/images/projects/clustering/output/fig1_clustering_dashboard.png"
+          alt="Clustering Dashboard — full pipeline overview"
+          class="w-full h-auto"
+        />
+      </div>
+    </section>
+
+    <!-- ── METHODOLOGY COMPARISON ── -->
+    <section class="bg-slate-950 py-28">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="mb-16 text-center">
+          <div class="text-blue-400 font-mono text-[10px] font-bold mb-3 uppercase tracking-[0.4em]">Comparative Analysis</div>
+          <h2 class="text-5xl font-black tracking-tighter uppercase text-white">Three Philosophies</h2>
+          <p class="text-slate-400 font-mono text-sm mt-4 max-w-2xl mx-auto leading-relaxed">
+            Each algorithm encodes a different belief about what a cluster is. The fraud topology demands one.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          <!-- K-Means -->
+          <div class="bg-slate-900 rounded-2xl overflow-hidden border border-slate-700 flex flex-col">
+            <div class="overflow-hidden">
+              <img src="/images/projects/clustering/output/fig2_3d_umap_kmeans.png" alt="K-Means 3D UMAP" class="w-full h-auto" />
+            </div>
+            <div class="p-6 flex flex-col gap-4 flex-1">
+              <div>
+                <span class="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-1">Method 01</span>
+                <h3 class="text-white font-black text-xl uppercase tracking-tight">K-Means</h3>
+                <span class="text-slate-500 font-mono text-[10px]">k = 4 clusters</span>
+              </div>
+              <p class="text-slate-400 font-mono text-xs leading-relaxed flex-1">
+                Highest geometric separation (Silhouette 0.7597) due to its assumption of spherical, equally-sized clusters. Excellent at partitioning the dense core manifold but blind to non-convex fraud tendrils and outlier topology — it assigns noise to the nearest centroid rather than flagging it.
+              </p>
+              <div class="flex gap-3 font-mono text-[10px] pt-2 border-t border-slate-800">
+                <div class="text-center">
+                  <span class="block text-slate-500 uppercase">Silhouette</span>
+                  <span class="text-white font-black">0.7597</span>
+                </div>
+                <div class="text-center">
+                  <span class="block text-slate-500 uppercase">DB Index</span>
+                  <span class="text-white font-black">0.2885</span>
+                </div>
+                <div class="text-center">
+                  <span class="block text-slate-500 uppercase">Clusters</span>
+                  <span class="text-white font-black">4</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- GMM -->
+          <div class="bg-slate-900 rounded-2xl overflow-hidden border border-slate-700 flex flex-col">
+            <div class="overflow-hidden">
+              <img src="/images/projects/clustering/output/fig2c_3d_umap_gmm.png" alt="GMM 3D UMAP" class="w-full h-auto" />
+            </div>
+            <div class="p-6 flex flex-col gap-4 flex-1">
+              <div>
+                <span class="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-1">Method 02</span>
+                <h3 class="text-white font-black text-xl uppercase tracking-tight">GMM</h3>
+                <span class="text-slate-500 font-mono text-[10px]">n = 10 components</span>
+              </div>
+              <p class="text-slate-400 font-mono text-xs leading-relaxed flex-1">
+                Gaussian Mixture Models add soft, probabilistic assignments and allow ellipsoidal cluster shapes. BIC/AIC selection converged at n=10 components — capturing more latent structure than K-Means but still constrained to parametric Gaussian geometry. Fraud boundaries remain probabilistically blurred, not topologically isolated.
+              </p>
+              <div class="flex gap-3 font-mono text-[10px] pt-2 border-t border-slate-800">
+                <div class="text-center">
+                  <span class="block text-slate-500 uppercase">Silhouette</span>
+                  <span class="text-white font-black">0.4843</span>
+                </div>
+                <div class="text-center">
+                  <span class="block text-slate-500 uppercase">DB Index</span>
+                  <span class="text-white font-black">0.6032</span>
+                </div>
+                <div class="text-center">
+                  <span class="block text-slate-500 uppercase">Clusters</span>
+                  <span class="text-white font-black">10</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- HDBSCAN — WINNER -->
+          <div class="bg-slate-900 rounded-2xl overflow-hidden border border-blue-500/50 flex flex-col shadow-2xl shadow-blue-500/20 ring-1 ring-blue-500/30">
+            <div class="overflow-hidden relative">
+              <img src="/images/projects/clustering/output/fig2b_3d_umap_hdbscan.png" alt="HDBSCAN 3D UMAP" class="w-full h-auto" />
+              <div class="absolute top-3 right-3 bg-blue-600 text-white font-mono font-black text-[9px] uppercase tracking-widest px-3 py-1 rounded-full">
+                ★ Selected
+              </div>
+            </div>
+            <div class="p-6 flex flex-col gap-4 flex-1">
+              <div>
+                <span class="text-[10px] font-mono text-blue-400 uppercase tracking-widest block mb-1">Method 03</span>
+                <h3 class="text-white font-black text-xl uppercase tracking-tight">HDBSCAN</h3>
+                <span class="text-blue-400 font-mono text-[10px]">9 clusters + noise isolation</span>
+              </div>
+              <p class="text-slate-400 font-mono text-xs leading-relaxed flex-1">
+                Density-based hierarchical clustering requires no assumption about cluster shape or count. It naturally discovers the irregular, filamentary topology of fraud transaction manifolds, explicitly labels low-density noise (0.9% of points) as outliers rather than assigning them, and produces a fraud enrichment hierarchy directly aligned with the UMAP embedding structure.
+              </p>
+              <div class="flex gap-3 font-mono text-[10px] pt-2 border-t border-blue-500/20">
+                <div class="text-center">
+                  <span class="block text-blue-400 uppercase">Silhouette</span>
+                  <span class="text-white font-black">0.4231</span>
+                </div>
+                <div class="text-center">
+                  <span class="block text-blue-400 uppercase">DB Index</span>
+                  <span class="text-white font-black">0.5241</span>
+                </div>
+                <div class="text-center">
+                  <span class="block text-blue-400 uppercase">Clusters</span>
+                  <span class="text-white font-black">9</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Why HDBSCAN wins note -->
+        <div class="mt-8 p-6 rounded-2xl border border-blue-500/20 bg-blue-950/30 font-mono text-xs text-blue-300 leading-relaxed max-w-4xl mx-auto text-center">
+          <strong class="text-blue-400">Why lower Silhouette score wins:</strong> Silhouette rewards compact, convex clusters — exactly what fraud is not. HDBSCAN's lower score reflects its honest representation of irregular, density-sparse fraud topologies that parametric methods artificially smooth over.
+        </div>
+      </div>
+    </section>
+
+    <!-- ── UMAP TOPOLOGY DEEP-DIVE ── -->
+    <section class="max-w-6xl mx-auto px-6 py-28 space-y-24">
+
+      <!-- UMAP explanation + density heatmap -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <div class="lg:col-span-5 space-y-6">
+          <div class="text-blue-600 font-mono text-[10px] font-bold uppercase tracking-[0.4em]">UMAP Topology</div>
+          <h3 class="text-4xl font-black tracking-tighter uppercase leading-tight">Local vs. Global Structure</h3>
+          <p class="text-slate-500 font-mono text-sm leading-relaxed">
+            UMAP constructs a weighted k-nearest-neighbour graph in the original 28-dimensional space, then optimizes a low-dimensional embedding to preserve that graph's <strong>topological structure</strong>. The <code class="bg-slate-100 px-1 rounded text-xs">n_neighbors</code> parameter controls the local-to-global tradeoff: small values reveal fine-grained manifold structure; larger values preserve macro-topology. At <code class="bg-slate-100 px-1 rounded text-xs">n_neighbors=15</code>, the embedding resolves both the dense legitimate transaction core and the sparse, filamentary fraud periphery simultaneously.
+          </p>
+          <p class="text-slate-500 font-mono text-sm leading-relaxed">
+            The 3D projection retains sufficient degrees of freedom to avoid the false separation artefacts that appear in 2D — critical when fraud clusters span multiple topological sheets.
+          </p>
+        </div>
+        <div class="lg:col-span-7">
+          <img
+            src="/images/projects/clustering/output/fig3_density_heatmap.png"
+            alt="Density heatmaps — K-Means, GMM, HDBSCAN"
+            class="rounded-2xl shadow-2xl border border-slate-100 w-full h-auto"
+          />
+          <p class="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest text-center mt-3">Density Heatmaps with Centroid Overlay — All Three Methods</p>
+        </div>
+      </div>
+
+      <!-- Performance comparison table -->
+      <div class="bg-slate-950 rounded-[2rem] p-8 md:p-14 text-white">
+        <div class="mb-10">
+          <div class="text-blue-400 font-mono text-[10px] font-bold uppercase tracking-[0.4em] mb-3">Quantitative Evaluation</div>
+          <h3 class="text-4xl font-black tracking-tighter uppercase">Performance Matrix</h3>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full font-mono text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-slate-700">
+                <th class="text-left py-4 pr-8 text-[10px] text-slate-500 uppercase tracking-widest font-bold">Method</th>
+                <th class="text-right py-4 px-6 text-[10px] text-slate-500 uppercase tracking-widest font-bold">Clusters</th>
+                <th class="text-right py-4 px-6 text-[10px] text-slate-500 uppercase tracking-widest font-bold">Silhouette ↑</th>
+                <th class="text-right py-4 px-6 text-[10px] text-slate-500 uppercase tracking-widest font-bold">Davies-Bouldin ↓</th>
+                <th class="text-right py-4 pl-6 text-[10px] text-slate-500 uppercase tracking-widest font-bold">Verdict</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800">
+              <tr>
+                <td class="py-5 pr-8 font-black text-white uppercase">K-Means</td>
+                <td class="py-5 px-6 text-right text-slate-300">4</td>
+                <td class="py-5 px-6 text-right font-bold text-white">0.7597</td>
+                <td class="py-5 px-6 text-right font-bold text-white">0.2885</td>
+                <td class="py-5 pl-6 text-right">
+                  <span class="px-2 py-1 bg-slate-800 text-slate-400 rounded text-[9px] uppercase tracking-wide">Geometric Baseline</span>
+                </td>
+              </tr>
+              <tr>
+                <td class="py-5 pr-8 font-black text-white uppercase">GMM</td>
+                <td class="py-5 px-6 text-right text-slate-300">10</td>
+                <td class="py-5 px-6 text-right font-bold text-white">0.4843</td>
+                <td class="py-5 px-6 text-right font-bold text-white">0.6032</td>
+                <td class="py-5 pl-6 text-right">
+                  <span class="px-2 py-1 bg-slate-800 text-slate-400 rounded text-[9px] uppercase tracking-wide">Probabilistic</span>
+                </td>
+              </tr>
+              <tr class="bg-blue-950/30">
+                <td class="py-5 pr-8 font-black text-blue-400 uppercase">HDBSCAN</td>
+                <td class="py-5 px-6 text-right text-slate-300">9</td>
+                <td class="py-5 px-6 text-right font-bold text-blue-400">0.4231</td>
+                <td class="py-5 px-6 text-right font-bold text-blue-400">0.5241</td>
+                <td class="py-5 pl-6 text-right">
+                  <span class="px-2 py-1 bg-blue-600 text-white rounded text-[9px] uppercase tracking-wide font-bold">★ Selected</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 font-mono text-[10px] text-slate-500 uppercase tracking-wide">
+          <div class="border-l-2 border-slate-700 pl-4">
+            <span class="block text-white font-bold text-base mb-1">1.29M</span>
+            Credit card transactions in source dataset
+          </div>
+          <div class="border-l-2 border-slate-700 pl-4">
+            <span class="block text-white font-bold text-base mb-1">15,000</span>
+            Analysis subset · 15% fraud oversampled
+          </div>
+          <div class="border-l-2 border-blue-500 pl-4">
+            <span class="block text-blue-400 font-bold text-base mb-1">0.9%</span>
+            HDBSCAN noise isolation rate
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature heatmap -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <div class="lg:col-span-7">
+          <img
+            src="/images/projects/clustering/output/fig4_feature_heatmap.png"
+            alt="Z-score feature importance heatmap"
+            class="rounded-2xl shadow-2xl border border-slate-100 w-full h-auto"
+          />
+          <p class="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest text-center mt-3">Z-Score Feature Importance · Clusters × 14 Features</p>
+        </div>
+        <div class="lg:col-span-5 space-y-6">
+          <div class="text-blue-600 font-mono text-[10px] font-bold uppercase tracking-[0.4em]">Feature Attribution</div>
+          <h3 class="text-4xl font-black tracking-tighter uppercase leading-tight">What Defines a Fraud Cluster?</h3>
+          <p class="text-slate-500 font-mono text-sm leading-relaxed">
+            The diverging Magenta↔Cyan Z-score heatmap maps each of the 14 PCA-derived features against all discovered clusters. High-magnitude deviation in the Magenta direction (negative Z) signals anomalously low feature values — the fingerprint of suppressed legitimate transaction patterns that define the fraudulent topology.
+          </p>
+          <p class="text-slate-500 font-mono text-sm leading-relaxed">
+            Clusters with strong, multi-feature signatures are candidates for targeted fraud rules; sparse signatures indicate ambiguous boundary regions requiring probabilistic scoring.
+          </p>
+        </div>
+      </div>
+
+      <!-- HDBSCAN noise analysis — full width -->
+      <div>
+        <div class="mb-8">
+          <div class="text-blue-600 font-mono text-[10px] font-bold uppercase tracking-[0.4em] mb-3">Fraud Enrichment Analysis</div>
+          <h3 class="text-4xl font-black tracking-tighter uppercase">Noise as Signal</h3>
+          <p class="text-slate-500 font-mono text-sm mt-4 max-w-3xl leading-relaxed">
+            In density-based clustering, points rejected as noise are not errors — they are topologically isolated. The two-panel analysis below shows exactly where HDBSCAN noise points sit in the 2D UMAP projection (Magenta) and how each cluster's fraud enrichment rate compares. The highest-enrichment clusters directly correspond to the manifold's low-density periphery.
+          </p>
+        </div>
+        <div class="rounded-2xl overflow-hidden border border-slate-100 shadow-2xl">
+          <img
+            src="/images/projects/clustering/output/fig5_hdbscan_noise_analysis.png"
+            alt="HDBSCAN noise analysis and fraud enrichment"
+            class="w-full h-auto"
+          />
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── TECH STACK ── -->
+    <section class="max-w-6xl mx-auto px-6 pb-28 pt-4 border-t border-slate-100">
+      <div class="flex flex-wrap gap-3 font-mono">
+        <span class="px-4 py-2 bg-slate-50 rounded-full text-[10px] font-bold text-slate-500 uppercase">UMAP 3D Projection</span>
+        <span class="px-4 py-2 bg-slate-50 rounded-full text-[10px] font-bold text-slate-500 uppercase">HDBSCAN</span>
+        <span class="px-4 py-2 bg-slate-50 rounded-full text-[10px] font-bold text-slate-500 uppercase">Gaussian Mixture Models</span>
+        <span class="px-4 py-2 bg-slate-50 rounded-full text-[10px] font-bold text-slate-500 uppercase">K-Means</span>
+        <span class="px-4 py-2 bg-slate-50 rounded-full text-[10px] font-bold text-slate-500 uppercase">Scikit-Learn</span>
+        <span class="px-4 py-2 bg-slate-50 rounded-full text-[10px] font-bold text-slate-500 uppercase">Matplotlib · Seaborn</span>
+        <span class="px-4 py-2 bg-slate-50 rounded-full text-[10px] font-bold text-slate-500 uppercase">1.29M Transactions</span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── COMING SOON MODAL ── -->
+  <div id="modal-overlay" class="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-md hidden items-center justify-center opacity-0 transition-opacity duration-300">
+    <div class="bg-white p-10 rounded-3xl shadow-2xl max-w-sm w-full mx-6 transform scale-95 transition-transform duration-300 border border-slate-100" id="modal-content">
+      <div class="text-center">
+        <div class="w-20 h-20 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 transform rotate-3">
+          <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        </div>
+        <h3 class="text-2xl font-black tracking-tighter mb-2 uppercase">Coming Soon</h3>
+        <p class="text-slate-500 text-xs mb-8 font-mono leading-relaxed">The interactive notebook is being prepared for public release.</p>
+        <button id="close-modal" class="w-full py-4 bg-slate-900 text-white text-[10px] font-black tracking-[0.2em] rounded-xl hover:bg-blue-600 transition-all uppercase">Return to Project</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const trigger = document.getElementById('demo-trigger')!;
+    const overlay = document.getElementById('modal-overlay')!;
+    const closeBtn = document.getElementById('close-modal')!;
+    const modalContent = document.getElementById('modal-content')!;
+
+    function openModal() {
+      overlay.classList.remove('hidden');
+      overlay.classList.add('flex');
+      requestAnimationFrame(() => {
+        overlay.classList.remove('opacity-0');
+        modalContent.classList.remove('scale-95');
+      });
+    }
+
+    function closeModal() {
+      overlay.classList.add('opacity-0');
+      modalContent.classList.add('scale-95');
+      setTimeout(() => {
+        overlay.classList.remove('flex');
+        overlay.classList.add('hidden');
+      }, 300);
+    }
+
+    trigger.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+  </script>
+
+</MainLayout>

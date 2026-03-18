@@ -36,6 +36,13 @@ export const siteConfig = {
       skills: ["Python", "PostgreSQL", "GCP", "GitHub Actions", "React"],
     },
     {
+      name: "Clustering Comparison",
+      description:
+        "Comparative manifold learning pipeline applying K-Means, GMM, and HDBSCAN to a 28-dimensional financial dataset projected into 3D latent space via UMAP to isolate fraudulent transaction topologies.",
+      link: "projects/latent-discovery",
+      skills: ["UMAP", "HDBSCAN", "GMM", "K-Means", "Scikit-Learn"],
+    },
+    {
       name: "Nationwide Real-Estate Valuation API",
       description:
         "Designed and deployed a model covering 1.8M+ records with 300+ features, providing base price estimations for 80% of the Austrian market via a real-time production API.",
