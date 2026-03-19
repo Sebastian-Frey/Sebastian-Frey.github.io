@@ -46,7 +46,7 @@ export const siteConfig = {
       name: "Nationwide Real-Estate Valuation API",
       description:
         "Designed and deployed a model covering 1.8M+ records with 300+ features, providing base price estimations for 80% of the Austrian market via a real-time production API.",
-      link: "#",
+      link: "#proprietary",
       skills: ["Time Series", "R", "Ensemble Models", "Data Quality Monitoring","API-Hosting"],
     },
     {
