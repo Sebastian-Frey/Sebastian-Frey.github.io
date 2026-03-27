@@ -57,6 +57,13 @@ export const siteConfig = {
       skills: ["OpenAI-API", "LLMs", "Streamlit", "Dashboards"],
     },
     {
+      name: "Eternal Chess",
+      description:
+        "A real-time multiplayer chess game powered by WebSockets. Server validates moves with python-chess and broadcasts to all players instantly. Features a round-robin queue system, move animations, and persistent game state.",
+      link: "projects/eternal-chess",
+      skills: ["chess.js", "WebSocket", "python-chess", "FastAPI", "Real-Time"],
+    },
+    {
       name: "SentinelLTV",
       description:
         "An end-to-end ML pipeline for high-throughput churn prediction. Features automated preprocessing, GridSearch hyperparameter optimization for XGBoost, and production-grade validation strategies to forecast customer lifetime value (LTV).",

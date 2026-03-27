@@ -1,0 +1,3 @@
+chess.itssebastianfrey.com {
+	reverse_proxy chess-backend:8000
+}

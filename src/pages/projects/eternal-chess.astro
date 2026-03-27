@@ -1,0 +1,1227 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+const wsUrl = import.meta.env.PUBLIC_WS_URL || "ws://localhost:8000/ws";
+---
+
+<MainLayout title="Eternal Chess">
+
+  <!-- ── NAV ── -->
+  <nav class="fixed top-0 w-full z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center font-mono text-[11px] uppercase tracking-widest">
+      <a href="/" class="font-bold text-slate-300 hover:text-blue-400 transition-colors">← Sebastian Frey</a>
+      <div class="hidden md:flex gap-8">
+        <a href="/#about" class="text-slate-400 hover:text-blue-400 transition-colors">About</a>
+        <a href="/#projects" class="text-blue-400 font-bold">Projects</a>
+        <a href="/#experience" class="text-slate-400 hover:text-blue-400 transition-colors">Experience</a>
+        <a href="/#education" class="text-slate-400 hover:text-blue-400 transition-colors">Education</a>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="https://github.com/Sebastian-Frey" target="_blank" class="text-slate-500 hover:text-blue-400 transition-colors">
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.042-1.416-4.042-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        </a>
+        <div id="status-badge" class="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-full text-slate-500 text-[9px] font-bold tracking-wider transition-all duration-300">
+          ● SERVER: CONNECTING
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section class="relative min-h-[60vh] flex items-end overflow-hidden bg-slate-950">
+    <!-- Grid background pattern -->
+    <div class="absolute inset-0 opacity-[0.04]" style="background-image: linear-gradient(rgba(59,130,246,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.5) 1px, transparent 1px); background-size: 60px 60px;"></div>
+    <!-- Radial glow -->
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.08)_0%,transparent_70%)]"></div>
+
+    <div class="relative z-10 max-w-6xl mx-auto px-6 pb-16 pt-32 w-full">
+      <div class="text-blue-400 font-mono text-[10px] font-bold mb-5 uppercase tracking-[0.5em]">
+        Live Multiplayer · WebSocket Architecture
+      </div>
+      <h1 class="text-6xl md:text-[9rem] font-black tracking-tighter leading-none uppercase text-white mb-6 glitch-title">
+        ETERNAL<span class="text-blue-500">CHESS</span><span class="text-slate-600">.</span>
+      </h1>
+      <p class="text-slate-400 font-mono text-sm max-w-xl leading-relaxed">
+        A real-time multiplayer chess game powered by <strong class="text-white">WebSockets</strong>. Server validates moves, broadcasts state to all connected players instantly. Persistent. Live. No page reloads.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── HOW TO PLAY ── -->
+  <section class="bg-slate-950 border-b border-slate-800">
+    <div class="max-w-6xl mx-auto px-6 py-12">
+      <div class="bg-slate-900 rounded-2xl border border-slate-800 p-8">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="text-2xl">♟</span>
+          <h2 class="font-mono text-sm font-bold text-white uppercase tracking-widest">How to Play</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 font-mono text-sm text-slate-400 leading-relaxed">
+          <div>
+            <p class="mb-3">This is a <strong class="text-white">shared, persistent chess game</strong>. There is one board, and everyone in the world plays on it together. The game continues even after you close your browser.</p>
+            <p>Click a piece to select it, then click a destination square to move. You can also type moves in standard notation (e.g. e4, Nf3, O-O) in the input box below the board.</p>
+          </div>
+          <div>
+            <p class="mb-3">When <strong class="text-white">1-2 people</strong> are online, anyone can make a move at any time.</p>
+            <p class="mb-3">When <strong class="text-white">3 or more people</strong> are online, a queue system activates. Each person makes <strong class="text-white">one move</strong>, then goes to the back of the line. The page will notify you when it's your turn.</p>
+            <p class="text-slate-500 text-xs">Your queue position is shown above the board.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── METRICS RIBBON ── -->
+  <section class="bg-slate-950 border-y border-slate-800">
+    <div class="max-w-6xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-0 font-mono divide-x divide-slate-800">
+      <div class="px-6 first:pl-0">
+        <span class="block text-[10px] text-slate-500 uppercase tracking-[0.3em] mb-2">Total Moves</span>
+        <span class="text-2xl font-black text-white" id="stat-moves">—</span>
+      </div>
+      <div class="px-6">
+        <span class="block text-[10px] text-slate-500 uppercase tracking-[0.3em] mb-2">Latency</span>
+        <span class="text-2xl font-black text-white" id="stat-latency">—<span class="text-blue-500">ms</span></span>
+      </div>
+      <div class="px-6">
+        <span class="block text-[10px] text-slate-500 uppercase tracking-[0.3em] mb-2">Protocol</span>
+        <span class="text-2xl font-black text-blue-400">WebSocket</span>
+      </div>
+      <div class="px-6">
+        <span class="block text-[10px] text-slate-500 uppercase tracking-[0.3em] mb-2">Connected</span>
+        <span class="text-2xl font-black text-white" id="stat-viewers">0 <span class="text-blue-500">viewers</span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── MAIN CONTENT: BOARD + DASHBOARD ── -->
+  <main class="bg-slate-950 min-h-screen">
+    <div class="max-w-7xl mx-auto px-6 py-20">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        <!-- ── CHESS BOARD PANEL ── -->
+        <div class="lg:col-span-7">
+          <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
+            <!-- Board header -->
+            <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span class="font-mono text-[10px] text-slate-400 uppercase tracking-widest">Live Board</span>
+              </div>
+              <span class="font-mono text-[10px] text-slate-600" id="turn-indicator">WHITE TO MOVE</span>
+            </div>
+
+            <!-- Server down notice -->
+            <div id="server-down-bar" class="px-6 py-4 border-b border-red-500/30 bg-red-500/5 hidden">
+              <div class="flex items-center justify-center gap-3 font-mono text-[11px]">
+                <span class="text-red-400 uppercase tracking-widest font-bold">Server Offline</span>
+                <span class="text-slate-500">—</span>
+                <span class="text-slate-400">The game server is currently down. Reach out at <a href="mailto:sc.frey@aol.de" class="text-blue-400 hover:text-blue-300 underline underline-offset-2 normal-case tracking-normal">sc.frey@aol.de</a></span>
+              </div>
+            </div>
+
+            <!-- Queue bar -->
+            <div id="queue-bar" class="px-6 py-3 border-b border-slate-800 font-mono text-[11px] uppercase tracking-widest text-center hidden">
+              <span id="queue-text"></span>
+            </div>
+
+            <!-- Chess board -->
+            <div class="p-4 md:p-8">
+              <div id="chess-board" class="grid grid-cols-8 aspect-square max-w-[560px] mx-auto rounded-lg overflow-hidden border border-slate-700 shadow-2xl shadow-blue-500/5 relative">
+                <!-- Board squares rendered by JS -->
+              </div>
+            </div>
+
+            <!-- Check banner -->
+            <div id="check-banner" class="px-6 py-2 border-b border-red-500/30 bg-red-500/10 font-mono text-[11px] uppercase tracking-widest text-center hidden">
+              <span class="text-red-400 font-bold">Check!</span>
+            </div>
+
+            <!-- Game over overlay -->
+            <div id="game-over-overlay" class="px-6 py-6 border-b border-amber-500/30 bg-amber-500/5 hidden">
+              <div class="text-center">
+                <div class="font-mono text-[10px] text-amber-500/70 uppercase tracking-[0.4em] mb-2">Game Over</div>
+                <div id="game-over-result" class="font-mono text-2xl font-black text-amber-400 mb-4"></div>
+                <button id="vote-restart-btn" class="px-6 py-2.5 bg-blue-600 text-white font-mono text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-500 transition-all hover:shadow-lg hover:shadow-blue-500/20">
+                  Vote to Restart
+                </button>
+                <div id="vote-status" class="font-mono text-[10px] text-slate-500 mt-3 hidden"></div>
+              </div>
+            </div>
+
+            <!-- Move input -->
+            <div class="px-6 pb-6">
+              <div class="flex gap-3">
+                <input
+                  type="text"
+                  id="move-input"
+                  placeholder="Enter move (e.g. e4, Nf3, O-O)"
+                  class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white font-mono text-sm placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 transition-all"
+                />
+                <button
+                  id="submit-move"
+                  class="px-6 py-3 bg-blue-600 text-white font-mono text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-500 transition-all hover:shadow-lg hover:shadow-blue-500/20"
+                >
+                  Dispatch
+                </button>
+              </div>
+              <div class="flex items-center justify-between mt-3">
+                <div id="move-feedback" class="font-mono text-xs hidden"></div>
+                <button id="vote-restart-inline" class="font-mono text-[9px] text-slate-600 hover:text-amber-400 uppercase tracking-wider transition-colors hidden">
+                  Vote to Restart
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── GITOPS DASHBOARD PANEL ── -->
+        <div class="lg:col-span-5 space-y-6">
+
+          <!-- Status Panel -->
+          <div class="bg-slate-900 rounded-2xl border border-slate-800 p-6">
+            <div class="flex items-center gap-3 mb-5">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="text-blue-400"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              <span class="font-mono text-[10px] text-slate-400 uppercase tracking-widest font-bold">Live Server Telemetry</span>
+            </div>
+            <div class="space-y-4">
+              <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
+                <span class="font-mono text-[10px] text-slate-500 uppercase">Server Status</span>
+                <span id="pipeline-status" class="font-mono text-[10px] font-bold text-slate-500 flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+                  CONNECTING
+                </span>
+              </div>
+              <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
+                <span class="font-mono text-[10px] text-slate-500 uppercase">Current FEN</span>
+                <span id="fen-display" class="font-mono text-[9px] text-blue-400 truncate max-w-[200px]">loading...</span>
+              </div>
+              <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
+                <span class="font-mono text-[10px] text-slate-500 uppercase">Move Number</span>
+                <span id="move-number" class="font-mono text-sm font-bold text-white">—</span>
+              </div>
+              <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
+                <span class="font-mono text-[10px] text-slate-500 uppercase">Game Result</span>
+                <span id="game-result" class="font-mono text-[10px] font-bold text-slate-400">IN PROGRESS</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Commit History -->
+          <div class="bg-slate-900 rounded-2xl border border-slate-800 p-6">
+            <div class="flex items-center gap-3 mb-5">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="text-blue-400"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
+              <span class="font-mono text-[10px] text-slate-400 uppercase tracking-widest font-bold">Commit History</span>
+            </div>
+            <div id="commit-log" class="space-y-2 max-h-[320px] overflow-y-auto scrollbar-thin">
+              <!-- Populated by JS -->
+              <div class="p-3 bg-slate-800/30 rounded-lg border border-slate-700/30 animate-pulse">
+                <div class="h-3 bg-slate-700 rounded w-3/4 mb-2"></div>
+                <div class="h-2 bg-slate-800 rounded w-1/2"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Game Info -->
+          <div class="bg-slate-900 rounded-2xl border border-slate-800 p-6">
+            <div class="flex items-center gap-3 mb-5">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="text-blue-400"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+              <span class="font-mono text-[10px] text-slate-400 uppercase tracking-widest font-bold">Move Log (PGN)</span>
+            </div>
+            <div id="pgn-display" class="font-mono text-xs text-slate-500 leading-loose bg-slate-800/30 rounded-xl p-4 border border-slate-700/30 min-h-[80px] max-h-[200px] overflow-y-auto">
+              Waiting for game state...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── WORKFLOW EXPLANATION ── -->
+    <section class="border-t border-slate-800 py-28">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="text-center mb-16">
+          <div class="text-blue-400 font-mono text-[10px] font-bold mb-3 uppercase tracking-[0.4em]">System Architecture</div>
+          <h2 class="text-5xl font-black tracking-tighter uppercase text-white">The WebSocket Pipeline</h2>
+          <p class="text-slate-400 font-mono text-sm mt-4 max-w-2xl mx-auto leading-relaxed">
+            Every chess move flows through a persistent WebSocket connection. The server validates, updates state, and broadcasts to all connected clients in real time.
+          </p>
+        </div>
+
+        <!-- CSS Flowchart -->
+        <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-0 max-w-5xl mx-auto">
+          <!-- Step 1 -->
+          <div class="flex flex-col items-center text-center w-full md:w-1/5">
+            <div class="w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-center mb-4">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="text-blue-400"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <span class="font-mono text-[10px] text-blue-400 uppercase tracking-widest font-bold block mb-1">Step 01</span>
+            <span class="font-mono text-xs text-white font-bold uppercase">User Move</span>
+            <span class="font-mono text-[9px] text-slate-500 mt-1">SAN notation input</span>
+          </div>
+
+          <!-- Arrow -->
+          <div class="hidden md:flex items-center justify-center flex-1">
+            <div class="h-[2px] flex-1 bg-gradient-to-r from-blue-500/50 to-blue-500/20"></div>
+            <svg width="12" height="12" fill="currentColor" viewBox="0 0 12 12" class="text-blue-500 -ml-1"><path d="M4 1l6 5-6 5V1z"/></svg>
+          </div>
+          <div class="md:hidden w-[2px] h-6 bg-gradient-to-b from-blue-500/50 to-blue-500/20"></div>
+
+          <!-- Step 2 -->
+          <div class="flex flex-col items-center text-center w-full md:w-1/5">
+            <div class="w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-center mb-4">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="text-blue-400"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <span class="font-mono text-[10px] text-blue-400 uppercase tracking-widest font-bold block mb-1">Step 02</span>
+            <span class="font-mono text-xs text-white font-bold uppercase">WS Send</span>
+            <span class="font-mono text-[9px] text-slate-500 mt-1">socket.send(move)</span>
+          </div>
+
+          <!-- Arrow -->
+          <div class="hidden md:flex items-center justify-center flex-1">
+            <div class="h-[2px] flex-1 bg-gradient-to-r from-blue-500/50 to-blue-500/20"></div>
+            <svg width="12" height="12" fill="currentColor" viewBox="0 0 12 12" class="text-blue-500 -ml-1"><path d="M4 1l6 5-6 5V1z"/></svg>
+          </div>
+          <div class="md:hidden w-[2px] h-6 bg-gradient-to-b from-blue-500/50 to-blue-500/20"></div>
+
+          <!-- Step 3 -->
+          <div class="flex flex-col items-center text-center w-full md:w-1/5">
+            <div class="w-16 h-16 rounded-2xl bg-amber-600/10 border border-amber-500/30 flex items-center justify-center mb-4">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="text-amber-400"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <span class="font-mono text-[10px] text-amber-400 uppercase tracking-widest font-bold block mb-1">Step 03</span>
+            <span class="font-mono text-xs text-white font-bold uppercase">Server Validate</span>
+            <span class="font-mono text-[9px] text-slate-500 mt-1">python-chess referee</span>
+          </div>
+
+          <!-- Arrow -->
+          <div class="hidden md:flex items-center justify-center flex-1">
+            <div class="h-[2px] flex-1 bg-gradient-to-r from-blue-500/50 to-blue-500/20"></div>
+            <svg width="12" height="12" fill="currentColor" viewBox="0 0 12 12" class="text-blue-500 -ml-1"><path d="M4 1l6 5-6 5V1z"/></svg>
+          </div>
+          <div class="md:hidden w-[2px] h-6 bg-gradient-to-b from-blue-500/50 to-blue-500/20"></div>
+
+          <!-- Step 4 -->
+          <div class="flex flex-col items-center text-center w-full md:w-1/5">
+            <div class="w-16 h-16 rounded-2xl bg-emerald-600/10 border border-emerald-500/30 flex items-center justify-center mb-4">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="text-emerald-400"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <span class="font-mono text-[10px] text-emerald-400 uppercase tracking-widest font-bold block mb-1">Step 04</span>
+            <span class="font-mono text-xs text-white font-bold uppercase">Broadcast</span>
+            <span class="font-mono text-[9px] text-slate-500 mt-1">WS push to all clients</span>
+          </div>
+
+          <!-- Arrow -->
+          <div class="hidden md:flex items-center justify-center flex-1">
+            <div class="h-[2px] flex-1 bg-gradient-to-r from-blue-500/50 to-blue-500/20"></div>
+            <svg width="12" height="12" fill="currentColor" viewBox="0 0 12 12" class="text-blue-500 -ml-1"><path d="M4 1l6 5-6 5V1z"/></svg>
+          </div>
+          <div class="md:hidden w-[2px] h-6 bg-gradient-to-b from-blue-500/50 to-blue-500/20"></div>
+
+          <!-- Step 5 -->
+          <div class="flex flex-col items-center text-center w-full md:w-1/5">
+            <div class="w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-center mb-4">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="text-blue-400"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <span class="font-mono text-[10px] text-blue-400 uppercase tracking-widest font-bold block mb-1">Step 05</span>
+            <span class="font-mono text-xs text-white font-bold uppercase">Board Refresh</span>
+            <span class="font-mono text-[9px] text-slate-500 mt-1">onmessage → render</span>
+          </div>
+        </div>
+
+        <!-- Code Snippet -->
+        <div class="mt-20 bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden max-w-4xl mx-auto">
+          <div class="px-6 py-3 border-b border-slate-800 flex items-center gap-3">
+            <div class="flex gap-1.5">
+              <div class="w-2.5 h-2.5 rounded-full bg-red-500/60"></div>
+              <div class="w-2.5 h-2.5 rounded-full bg-amber-500/60"></div>
+              <div class="w-2.5 h-2.5 rounded-full bg-emerald-500/60"></div>
+            </div>
+            <span class="font-mono text-[10px] text-slate-500">WebSocket message flow</span>
+          </div>
+          <pre class="p-6 font-mono text-xs text-slate-300 leading-relaxed overflow-x-auto"><code><span class="text-slate-500">// Client → Server (move)</span>
+socket.send(JSON.stringify(&#123;
+  <span class="text-blue-400">"move"</span>: <span class="text-amber-400">"e4"</span>
+&#125;));
+
+<span class="text-slate-500">// Server → All Clients (broadcast)</span>
+&#123;
+  <span class="text-blue-400">"type"</span>:  <span class="text-amber-400">"move"</span>,
+  <span class="text-blue-400">"move"</span>:  <span class="text-amber-400">"e4"</span>,
+  <span class="text-blue-400">"fen"</span>:   <span class="text-amber-400">"rnbqkbnr/pppppppp/8/..."</span>,
+  <span class="text-blue-400">"turn"</span>:  <span class="text-amber-400">"b"</span>
+&#125;</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── IMPLEMENTATION DETAILS ── -->
+    <section class="border-t border-slate-800 py-28">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="mb-16">
+          <div class="text-blue-400 font-mono text-[10px] font-bold mb-3 uppercase tracking-[0.4em]">Under the Hood</div>
+          <h2 class="text-5xl font-black tracking-tighter uppercase text-white">Implementation</h2>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <!-- Server (FastAPI + WebSocket) -->
+          <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
+            <div class="px-6 py-3 border-b border-slate-800 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="flex gap-1.5">
+                  <div class="w-2.5 h-2.5 rounded-full bg-red-500/60"></div>
+                  <div class="w-2.5 h-2.5 rounded-full bg-amber-500/60"></div>
+                  <div class="w-2.5 h-2.5 rounded-full bg-emerald-500/60"></div>
+                </div>
+                <span class="font-mono text-[10px] text-slate-500">server.py</span>
+              </div>
+              <span class="font-mono text-[9px] text-blue-400 uppercase tracking-wider">FastAPI</span>
+            </div>
+            <pre class="p-6 font-mono text-[11px] text-slate-300 leading-relaxed overflow-x-auto max-h-[400px]"><code><span class="text-blue-400">from</span> fastapi <span class="text-blue-400">import</span> FastAPI, WebSocket
+<span class="text-blue-400">import</span> chess, json
+
+app = FastAPI()
+board = chess.Board()
+clients: <span class="text-emerald-400">list</span>[WebSocket] = []
+
+<span class="text-blue-400">@app.websocket</span>(<span class="text-amber-400">"/ws"</span>)
+<span class="text-blue-400">async def</span> <span class="text-emerald-400">ws</span>(socket: WebSocket):
+    <span class="text-blue-400">await</span> socket.accept()
+    clients.append(socket)
+
+    <span class="text-slate-500"># Send current state</span>
+    <span class="text-blue-400">await</span> socket.send_json(&#123;
+        <span class="text-amber-400">"type"</span>: <span class="text-amber-400">"init"</span>,
+        <span class="text-amber-400">"fen"</span>: board.fen()
+    &#125;)
+
+    <span class="text-blue-400">async for</span> data <span class="text-blue-400">in</span> socket.iter_json():
+        move = board.parse_san(data[<span class="text-amber-400">"move"</span>])
+        board.push(move)
+        <span class="text-blue-400">for</span> c <span class="text-blue-400">in</span> clients:
+            <span class="text-blue-400">await</span> c.send_json(&#123;
+                <span class="text-amber-400">"type"</span>: <span class="text-amber-400">"move"</span>,
+                <span class="text-amber-400">"fen"</span>: board.fen()
+            &#125;)</code></pre>
+          </div>
+
+          <!-- Client (WebSocket connect) -->
+          <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
+            <div class="px-6 py-3 border-b border-slate-800 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="flex gap-1.5">
+                  <div class="w-2.5 h-2.5 rounded-full bg-red-500/60"></div>
+                  <div class="w-2.5 h-2.5 rounded-full bg-amber-500/60"></div>
+                  <div class="w-2.5 h-2.5 rounded-full bg-emerald-500/60"></div>
+                </div>
+                <span class="font-mono text-[10px] text-slate-500">client.js</span>
+              </div>
+              <span class="font-mono text-[9px] text-amber-400 uppercase tracking-wider">JavaScript</span>
+            </div>
+            <pre class="p-6 font-mono text-[11px] text-slate-300 leading-relaxed overflow-x-auto max-h-[400px]"><code><span class="text-blue-400">const</span> socket = <span class="text-blue-400">new</span> WebSocket(
+  <span class="text-amber-400">'ws://&#123;YOUR_SERVER&#125;:8000/ws'</span>
+);
+
+socket.<span class="text-emerald-400">onopen</span> = () =&gt; &#123;
+  console.log(<span class="text-amber-400">'Connected'</span>);
+&#125;;
+
+socket.<span class="text-emerald-400">onmessage</span> = (event) =&gt; &#123;
+  <span class="text-blue-400">const</span> data = JSON.parse(event.data);
+
+  <span class="text-blue-400">if</span> (data.type === <span class="text-amber-400">'init'</span>) &#123;
+    board.load(data.fen);
+    renderBoard();
+  &#125;
+
+  <span class="text-blue-400">if</span> (data.type === <span class="text-amber-400">'move'</span>) &#123;
+    board.load(data.fen);
+    renderBoard();  <span class="text-slate-500">// all viewers</span>
+  &#125;
+&#125;;
+
+<span class="text-slate-500">// Send a move</span>
+socket.send(JSON.stringify(&#123;
+  <span class="text-amber-400">"move"</span>: <span class="text-amber-400">"e4"</span>
+&#125;));</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── TECH STACK ── -->
+    <section class="border-t border-slate-800 py-16">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="flex flex-wrap gap-3 font-mono">
+          <span class="px-4 py-2 bg-slate-900 border border-slate-800 rounded-full text-[10px] font-bold text-slate-400 uppercase">chess.js</span>
+          <span class="px-4 py-2 bg-slate-900 border border-slate-800 rounded-full text-[10px] font-bold text-slate-400 uppercase">python-chess</span>
+          <span class="px-4 py-2 bg-slate-900 border border-slate-800 rounded-full text-[10px] font-bold text-slate-400 uppercase">WebSocket</span>
+          <span class="px-4 py-2 bg-slate-900 border border-slate-800 rounded-full text-[10px] font-bold text-slate-400 uppercase">Real-Time Multiplayer</span>
+          <span class="px-4 py-2 bg-slate-900 border border-slate-800 rounded-full text-[10px] font-bold text-slate-400 uppercase">FastAPI</span>
+          <span class="px-4 py-2 bg-slate-900 border border-slate-800 rounded-full text-[10px] font-bold text-slate-400 uppercase">Vanilla JS</span>
+          <span class="px-4 py-2 bg-slate-900 border border-slate-800 rounded-full text-[10px] font-bold text-slate-400 uppercase">Persistent State</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ── GLITCH CSS + ANIMATION CSS ── -->
+  <style>
+    .glitch-title {
+      position: relative;
+    }
+    .glitch-title::before,
+    .glitch-title::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    @keyframes glitch-1 {
+      0%, 100% { clip-path: inset(0 0 100% 0); }
+      5% { clip-path: inset(20% 0 60% 0); transform: translate(-3px, 0); }
+      10% { clip-path: inset(0 0 100% 0); }
+      40% { clip-path: inset(60% 0 10% 0); transform: translate(3px, 0); }
+      45% { clip-path: inset(0 0 100% 0); }
+    }
+
+    @keyframes glitch-2 {
+      0%, 100% { clip-path: inset(0 0 100% 0); }
+      15% { clip-path: inset(40% 0 30% 0); transform: translate(3px, 0); }
+      20% { clip-path: inset(0 0 100% 0); }
+      55% { clip-path: inset(10% 0 70% 0); transform: translate(-3px, 0); }
+      60% { clip-path: inset(0 0 100% 0); }
+    }
+
+    .glitch-title::before {
+      color: #3b82f6;
+      animation: glitch-1 4s infinite linear;
+      opacity: 0.6;
+    }
+    .glitch-title::after {
+      color: #ef4444;
+      animation: glitch-2 4s infinite linear;
+      opacity: 0.4;
+    }
+
+    /* Neon glow on active squares */
+    .square-active {
+      box-shadow: inset 0 0 20px rgba(59, 130, 246, 0.4), 0 0 8px rgba(59, 130, 246, 0.3);
+      border: 1px solid rgba(59, 130, 246, 0.5) !important;
+    }
+    .square-last-move {
+      box-shadow: inset 0 0 20px rgba(59, 130, 246, 0.3);
+      background-color: rgba(59, 130, 246, 0.08) !important;
+    }
+    .square-selected {
+      box-shadow: inset 0 0 25px rgba(59, 130, 246, 0.6), 0 0 12px rgba(59, 130, 246, 0.4);
+      border: 1px solid rgba(59, 130, 246, 0.7) !important;
+    }
+    .square-legal {
+      position: relative;
+    }
+    .square-legal::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 30%;
+      height: 30%;
+      border-radius: 50%;
+      background: rgba(59, 130, 246, 0.35);
+    }
+    .square-check {
+      box-shadow: inset 0 0 25px rgba(239, 68, 68, 0.5), 0 0 12px rgba(239, 68, 68, 0.4);
+      background-color: rgba(239, 68, 68, 0.12) !important;
+    }
+
+    /* Animation overlay for sliding pieces */
+    .piece-clone {
+      position: fixed;
+      z-index: 100;
+      pointer-events: none;
+      transition: transform 200ms ease-out;
+    }
+    .piece-hidden {
+      visibility: hidden;
+    }
+
+    /* Queue bar pulse animation */
+    @keyframes queue-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    .queue-your-turn {
+      animation: queue-pulse 2s ease-in-out infinite;
+    }
+
+    /* Scrollbar for dashboard panels */
+    .scrollbar-thin::-webkit-scrollbar { width: 4px; }
+    .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+  </style>
+
+  <!-- ── CHESS.JS CDN ── -->
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+
+  <!-- ── Inject build-time WS URL ── -->
+  <script define:vars={{ wsUrl }}>
+    window.__EC_WS_URL = wsUrl;
+  </script>
+
+  <!-- ── GAME ENGINE (WebSocket + Queue + Animations) ── -->
+  <script is:inline>
+    // ── CONFIG ──
+    var WS_URL = window.__EC_WS_URL || 'ws://localhost:8000/ws';
+
+    // ── PIECE UNICODE MAP ──
+    var PIECE_GLYPHS = {
+      'K': '\u2654', 'Q': '\u2655', 'R': '\u2656', 'B': '\u2657', 'N': '\u2658', 'P': '\u2659',
+      'k': '\u265A', 'q': '\u265B', 'r': '\u265C', 'b': '\u265D', 'n': '\u265E', 'p': '\u265F'
+    };
+
+    // ── STATE ──
+    var chess = new Chess();
+    var selectedSquare = null;
+    var moveHistory = [];
+    var socket = null;
+    var reconnectAttempts = 0;
+    var lastMoveSentAt = 0;
+    var lastMoveFrom = null;
+    var lastMoveTo = null;
+    var animating = false;
+
+    // Queue state
+    var myId = null;
+    var queueEnabled = false;
+    var queuePosition = -1;
+    var isMyTurn = true;
+
+    // ── DOM REFS ──
+    var boardEl     = document.getElementById('chess-board');
+    var moveInput   = document.getElementById('move-input');
+    var submitBtn   = document.getElementById('submit-move');
+    var feedback    = document.getElementById('move-feedback');
+    var turnEl      = document.getElementById('turn-indicator');
+    var fenEl       = document.getElementById('fen-display');
+    var moveNumEl   = document.getElementById('move-number');
+    var resultEl    = document.getElementById('game-result');
+    var pgnEl       = document.getElementById('pgn-display');
+    var commitLog   = document.getElementById('commit-log');
+    var pipelineEl  = document.getElementById('pipeline-status');
+    var statusBadge = document.getElementById('status-badge');
+    var statMoves   = document.getElementById('stat-moves');
+    var statLatency = document.getElementById('stat-latency');
+    var statViewers = document.getElementById('stat-viewers');
+    var queueBar    = document.getElementById('queue-bar');
+    var queueText   = document.getElementById('queue-text');
+    var serverDownBar = document.getElementById('server-down-bar');
+    var checkBanner = document.getElementById('check-banner');
+    var gameOverOverlay = document.getElementById('game-over-overlay');
+    var gameOverResult = document.getElementById('game-over-result');
+    var voteRestartBtn = document.getElementById('vote-restart-btn');
+    var voteRestartInline = document.getElementById('vote-restart-inline');
+    var voteStatus  = document.getElementById('vote-status');
+
+    // ── SOUND SYSTEM ──
+    var sounds = {};
+    function preloadSounds() {
+      ['move', 'capture', 'check', 'notify'].forEach(function(name) {
+        var audio = new Audio('/sounds/' + name + '.mp3');
+        audio.preload = 'auto';
+        audio.volume = 0.5;
+        sounds[name] = audio;
+      });
+    }
+    function playSound(name) {
+      var s = sounds[name];
+      if (s) {
+        s.currentTime = 0;
+        s.play().catch(function() {});
+      }
+    }
+    preloadSounds();
+
+    // Request notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
+    // ── WEBSOCKET CONNECTION ──
+    function connectWebSocket() {
+      socket = new WebSocket(WS_URL);
+
+      socket.onopen = function() {
+        reconnectAttempts = 0;
+        setServerStatus('online');
+        showFeedback('Connected to game server', 'emerald');
+      };
+
+      socket.onmessage = function(event) {
+        var data;
+        try { data = JSON.parse(event.data); } catch(e) { return; }
+        handleServerMessage(data);
+      };
+
+      socket.onclose = function() {
+        setServerStatus('offline');
+        var delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+        reconnectAttempts++;
+        showFeedback('Disconnected. Reconnecting in ' + Math.round(delay/1000) + 's...', 'amber');
+        setTimeout(connectWebSocket, delay);
+      };
+
+      socket.onerror = function() {
+        setServerStatus('offline');
+      };
+    }
+
+    // ── HANDLE SERVER MESSAGES ──
+    function handleServerMessage(data) {
+      var type = data.type;
+
+      if (type === 'init') {
+        if (data.fen) {
+          chess = new Chess(data.fen);
+        }
+        if (data.moves && Array.isArray(data.moves)) {
+          moveHistory = data.moves;
+        }
+        if (data.move_count != null) {
+          statMoves.textContent = data.move_count.toLocaleString();
+        }
+        if (data.your_id) {
+          myId = data.your_id;
+        }
+        lastMoveFrom = null;
+        lastMoveTo = null;
+        selectedSquare = null;
+        // Clear game-over and check states
+        gameOverOverlay.classList.add('hidden');
+        checkBanner.classList.add('hidden');
+        voteStatus.classList.add('hidden');
+        voteRestartInline.classList.add('hidden');
+        renderBoard();
+        updateUI();
+        renderMoveHistory(moveHistory);
+        return;
+      }
+
+      if (type === 'move') {
+        var fromSq = data.from || null;
+        var toSq = data.to || null;
+
+        if (fromSq && toSq && !animating) {
+          // Animate the move
+          animateMove(fromSq, toSq, data, function() {
+            applyMoveData(data, fromSq, toSq);
+          });
+        } else {
+          applyMoveData(data, fromSq, toSq);
+        }
+        return;
+      }
+
+      if (type === 'error') {
+        showFeedback('Server: ' + (data.message || 'Invalid move'), 'red');
+        if (data.fen) {
+          chess = new Chess(data.fen);
+          selectedSquare = null;
+          renderBoard();
+          updateUI();
+        }
+        return;
+      }
+
+      if (type === 'viewers') {
+        if (data.count != null) {
+          statViewers.innerHTML = data.count + ' <span class="text-blue-500">viewers</span>';
+        }
+        return;
+      }
+
+      if (type === 'queue') {
+        var wasMyTurn = isMyTurn;
+        queueEnabled = data.enabled;
+        if (data.enabled) {
+          queuePosition = data.position;
+          isMyTurn = data.is_your_turn;
+        } else {
+          queuePosition = -1;
+          isMyTurn = true;
+        }
+        updateQueueUI();
+
+        // Notify when it becomes your turn
+        if (data.is_your_turn && !wasMyTurn && queueEnabled) {
+          playSound('notify');
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Eternal Chess', { body: "It's your turn to move!" });
+          }
+        }
+        return;
+      }
+
+      if (type === 'game_over') {
+        var result = data.result || 'Game Over';
+        resultEl.textContent = result;
+        resultEl.className = 'font-mono text-[10px] font-bold text-amber-400';
+        playSound('check');
+        checkBanner.classList.add('hidden');
+
+        // Show game over overlay
+        gameOverResult.textContent = result;
+        gameOverOverlay.classList.remove('hidden');
+        voteRestartInline.classList.add('hidden');
+
+        // Browser notification
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('Eternal Chess', { body: 'Game Over: ' + result });
+        }
+        return;
+      }
+
+      if (type === 'restart_vote') {
+        voteStatus.textContent = data.votes + ' / ' + data.needed + ' votes to restart';
+        voteStatus.classList.remove('hidden');
+        return;
+      }
+    }
+
+    // ── APPLY MOVE DATA (after animation or immediately) ──
+    function applyMoveData(data, fromSq, toSq) {
+      if (data.fen) {
+        chess = new Chess(data.fen);
+      } else if (data.move) {
+        chess.move(data.move);
+      }
+
+      // Track latency if this was our own move
+      if (lastMoveSentAt > 0) {
+        var latency = Date.now() - lastMoveSentAt;
+        statLatency.innerHTML = latency + '<span class="text-blue-500">ms</span>';
+        lastMoveSentAt = 0;
+      }
+
+      if (data.move) {
+        moveHistory.push(data.move);
+        addMoveEntry(data.move, moveHistory.length);
+      }
+      if (data.move_count != null) {
+        statMoves.textContent = data.move_count.toLocaleString();
+      }
+
+      // Play sound + check banner
+      if (data.is_check) {
+        playSound('check');
+        checkBanner.classList.remove('hidden');
+      } else {
+        checkBanner.classList.add('hidden');
+        if (data.is_capture) {
+          playSound('capture');
+        } else {
+          playSound('move');
+        }
+      }
+
+      // Show inline restart vote button during active games
+      if (!chess.isGameOver || !chess.isGameOver()) {
+        voteRestartInline.classList.remove('hidden');
+      }
+
+      lastMoveFrom = fromSq;
+      lastMoveTo = toSq;
+      selectedSquare = null;
+      renderBoard();
+      updateUI();
+    }
+
+    // ── MOVE ANIMATION ──
+    function animateMove(fromSq, toSq, data, callback) {
+      var fromEl = boardEl.querySelector('[data-square="' + fromSq + '"]');
+      var toEl = boardEl.querySelector('[data-square="' + toSq + '"]');
+
+      if (!fromEl || !toEl) {
+        callback();
+        return;
+      }
+
+      var pieceEl = fromEl.querySelector('span[class*="text-2xl"], span[class*="md:text-4xl"]');
+      if (!pieceEl) {
+        callback();
+        return;
+      }
+
+      animating = true;
+
+      var fromRect = fromEl.getBoundingClientRect();
+      var toRect = toEl.getBoundingClientRect();
+
+      // Create flying clone
+      var clone = document.createElement('span');
+      clone.textContent = pieceEl.textContent;
+      clone.className = 'piece-clone';
+      clone.style.fontSize = getComputedStyle(pieceEl).fontSize;
+      clone.style.color = pieceEl.style.color;
+      clone.style.textShadow = pieceEl.style.textShadow;
+      clone.style.left = (fromRect.left + fromRect.width / 2) + 'px';
+      clone.style.top = (fromRect.top + fromRect.height / 2) + 'px';
+      clone.style.transform = 'translate(-50%, -50%)';
+      document.body.appendChild(clone);
+
+      // Hide the original piece
+      pieceEl.classList.add('piece-hidden');
+
+      // Trigger animation
+      requestAnimationFrame(function() {
+        var dx = toRect.left - fromRect.left;
+        var dy = toRect.top - fromRect.top;
+        clone.style.transform = 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px))';
+      });
+
+      clone.addEventListener('transitionend', function() {
+        clone.remove();
+        animating = false;
+        callback();
+      });
+
+      // Fallback in case transitionend doesn't fire
+      setTimeout(function() {
+        if (clone.parentNode) {
+          clone.remove();
+          animating = false;
+          callback();
+        }
+      }, 300);
+    }
+
+    // ── QUEUE UI ──
+    function updateQueueUI() {
+      if (!queueEnabled) {
+        queueBar.classList.add('hidden');
+        // Re-enable input
+        moveInput.disabled = false;
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        return;
+      }
+
+      queueBar.classList.remove('hidden');
+
+      if (isMyTurn) {
+        queueBar.className = 'px-6 py-3 border-b border-emerald-500/30 bg-emerald-500/10 font-mono text-[11px] uppercase tracking-widest text-center queue-your-turn';
+        queueText.innerHTML = '<span class="text-emerald-400 font-bold">Your Turn</span> <span class="text-emerald-500/70">— Make a move!</span>';
+        moveInput.disabled = false;
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      } else {
+        queueBar.className = 'px-6 py-3 border-b border-amber-500/30 bg-amber-500/10 font-mono text-[11px] uppercase tracking-widest text-center';
+        queueText.innerHTML = '<span class="text-amber-400 font-bold">Position #' + (queuePosition + 1) + ' of ' + '</span><span class="text-amber-500/70"> — Wait for your turn</span>';
+        moveInput.disabled = true;
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+    }
+
+    // ── SERVER STATUS INDICATOR ──
+    function setServerStatus(state) {
+      if (state === 'online') {
+        statusBadge.className = 'px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-emerald-400 text-[9px] font-bold tracking-wider transition-all duration-300';
+        statusBadge.innerHTML = '\u25CF SERVER: ONLINE';
+        pipelineEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> CONNECTED';
+        pipelineEl.className = 'font-mono text-[10px] font-bold text-emerald-400 flex items-center gap-2';
+        serverDownBar.classList.add('hidden');
+      } else {
+        statusBadge.className = 'px-3 py-1.5 bg-red-500/10 border border-red-500/30 rounded-full text-red-400 text-[9px] font-bold tracking-wider transition-all duration-300';
+        statusBadge.innerHTML = '\u25CF SERVER: OFFLINE';
+        pipelineEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> DISCONNECTED';
+        pipelineEl.className = 'font-mono text-[10px] font-bold text-red-400 flex items-center gap-2';
+        serverDownBar.classList.remove('hidden');
+      }
+    }
+
+    // ── SEND MOVE VIA WEBSOCKET ──
+    function sendMove(san) {
+      if (!socket || socket.readyState !== WebSocket.OPEN) {
+        showFeedback('Not connected to server', 'red');
+        return;
+      }
+      lastMoveSentAt = Date.now();
+      socket.send(JSON.stringify({ move: san }));
+    }
+
+    // ── RENDER BOARD ──
+    function renderBoard() {
+      boardEl.innerHTML = '';
+      var board = chess.board();
+
+      // Determine if king is in check
+      var checkSquare = null;
+      if (chess.in_check && chess.in_check()) {
+        // Find the king that's in check
+        var turnColor = chess.turn();
+        for (var r = 0; r < 8; r++) {
+          for (var c = 0; c < 8; c++) {
+            var p = board[r][c];
+            if (p && p.type === 'k' && p.color === turnColor) {
+              checkSquare = String.fromCharCode(97 + c) + (8 - r);
+            }
+          }
+        }
+      }
+
+      for (var r = 0; r < 8; r++) {
+        for (var c = 0; c < 8; c++) {
+          var sq = document.createElement('div');
+          var isLight = (r + c) % 2 === 0;
+          var file = String.fromCharCode(97 + c);
+          var rank = 8 - r;
+          var sqName = file + rank;
+
+          sq.className = 'relative flex items-center justify-center cursor-pointer transition-all duration-150 aspect-square';
+          sq.style.backgroundColor = isLight ? '#1e293b' : '#0f172a';
+          sq.dataset.square = sqName;
+
+          // Rank/file labels
+          if (c === 0) {
+            var label = document.createElement('span');
+            label.className = 'absolute top-0.5 left-1 text-[8px] font-mono font-bold pointer-events-none';
+            label.style.color = isLight ? '#334155' : '#1e293b';
+            label.textContent = rank.toString();
+            sq.appendChild(label);
+          }
+          if (r === 7) {
+            var label = document.createElement('span');
+            label.className = 'absolute bottom-0 right-1 text-[8px] font-mono font-bold pointer-events-none';
+            label.style.color = isLight ? '#334155' : '#1e293b';
+            label.textContent = file;
+            sq.appendChild(label);
+          }
+
+          // Last move highlight
+          if (sqName === lastMoveFrom || sqName === lastMoveTo) {
+            sq.classList.add('square-last-move');
+          }
+
+          // Check highlight
+          if (sqName === checkSquare) {
+            sq.classList.add('square-check');
+          }
+
+          // Piece
+          var piece = board[r][c];
+          if (piece) {
+            var pieceEl = document.createElement('span');
+            var key = piece.color === 'w' ? piece.type.toUpperCase() : piece.type.toLowerCase();
+            pieceEl.textContent = PIECE_GLYPHS[key];
+            pieceEl.className = 'text-2xl md:text-4xl pointer-events-none select-none';
+            pieceEl.style.color = piece.color === 'w' ? '#ffffff' : '#475569';
+            pieceEl.style.textShadow = piece.color === 'w'
+              ? '0 0 10px rgba(255,255,255,0.4), 0 1px 2px rgba(0,0,0,0.3)'
+              : '0 0 6px rgba(71,85,105,0.3), 0 1px 2px rgba(0,0,0,0.5)';
+            sq.appendChild(pieceEl);
+          }
+
+          // Selected highlight
+          if (selectedSquare === sqName) {
+            sq.classList.add('square-selected');
+          }
+
+          // Legal move dots
+          if (selectedSquare) {
+            var moves = chess.moves({ square: selectedSquare, verbose: true });
+            if (moves.some(function(m) { return m.to === sqName; })) {
+              sq.classList.add('square-legal');
+            }
+          }
+
+          // Click handler
+          (function(name) {
+            sq.addEventListener('click', function() { handleSquareClick(name); });
+          })(sqName);
+
+          boardEl.appendChild(sq);
+        }
+      }
+    }
+
+    // ── SQUARE CLICK ──
+    function handleSquareClick(sqName) {
+      // Queue guard
+      if (queueEnabled && !isMyTurn) {
+        showFeedback('Wait for your turn! You are #' + (queuePosition + 1) + ' in the queue.', 'amber');
+        return;
+      }
+
+      if (selectedSquare) {
+        var moves = chess.moves({ square: selectedSquare, verbose: true });
+        var target = moves.find(function(m) { return m.to === sqName; });
+        if (target) {
+          executeMove(target.san);
+        } else {
+          var piece = chess.get(sqName);
+          selectedSquare = (piece && piece.color === chess.turn()) ? sqName : null;
+        }
+      } else {
+        var piece = chess.get(sqName);
+        if (piece && piece.color === chess.turn()) {
+          selectedSquare = sqName;
+        }
+      }
+      renderBoard();
+    }
+
+    // ── EXECUTE MOVE ──
+    function executeMove(san) {
+      // Queue guard
+      if (queueEnabled && !isMyTurn) {
+        showFeedback('Wait for your turn!', 'amber');
+        return;
+      }
+
+      // Optimistic local update
+      var result = chess.move(san);
+      if (!result) {
+        showFeedback('Invalid move: ' + san, 'red');
+        return;
+      }
+      selectedSquare = null;
+      lastMoveFrom = result.from;
+      lastMoveTo = result.to;
+      renderBoard();
+      updateUI();
+
+      // Send to server
+      sendMove(san);
+
+      // Brief status flash
+      pipelineEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> SENDING';
+      pipelineEl.className = 'font-mono text-[10px] font-bold text-amber-400 flex items-center gap-2';
+      setTimeout(function() {
+        if (socket && socket.readyState === WebSocket.OPEN) {
+          pipelineEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> CONNECTED';
+          pipelineEl.className = 'font-mono text-[10px] font-bold text-emerald-400 flex items-center gap-2';
+        }
+      }, 1500);
+    }
+
+    // ── UPDATE UI ──
+    function updateUI() {
+      var turn = chess.turn() === 'w' ? 'WHITE' : 'BLACK';
+      turnEl.textContent = turn + ' TO MOVE';
+      fenEl.textContent = chess.fen();
+      moveNumEl.textContent = Math.floor(chess.moveNumber());
+
+      if (chess.isCheckmate()) {
+        var winner = chess.turn() === 'w' ? 'BLACK' : 'WHITE';
+        resultEl.textContent = winner + ' WINS';
+        resultEl.className = 'font-mono text-[10px] font-bold text-amber-400';
+      } else if (chess.isDraw()) {
+        resultEl.textContent = 'DRAW';
+        resultEl.className = 'font-mono text-[10px] font-bold text-amber-400';
+      } else {
+        resultEl.textContent = 'IN PROGRESS';
+        resultEl.className = 'font-mono text-[10px] font-bold text-slate-400';
+      }
+
+      // PGN
+      var history = chess.history();
+      if (history.length > 0) {
+        var pgn = '';
+        for (var i = 0; i < history.length; i += 2) {
+          var num = Math.floor(i / 2) + 1;
+          pgn += num + '. ' + history[i];
+          if (history[i + 1]) pgn += ' ' + history[i + 1] + ' ';
+          else pgn += ' ';
+        }
+        pgnEl.textContent = pgn.trim();
+      } else {
+        pgnEl.textContent = 'No moves yet \u2014 be the first to play.';
+      }
+    }
+
+    // ── MOVE LOG ──
+    function renderMoveHistory(moves) {
+      if (!moves || moves.length === 0) {
+        commitLog.innerHTML = '<div class="p-3 bg-slate-800/30 rounded-lg border border-slate-700/30 text-center"><span class="font-mono text-[10px] text-slate-500">No moves yet</span></div>';
+        return;
+      }
+      commitLog.innerHTML = '';
+      var recent = moves.slice(-20).reverse();
+      recent.forEach(function(move, i) {
+        var idx = moves.length - i;
+        var entry = document.createElement('div');
+        entry.className = 'p-3 bg-slate-800/30 rounded-lg border border-slate-700/30 hover:border-blue-500/30 transition-colors';
+        var color = idx % 2 === 1 ? 'White' : 'Black';
+        entry.innerHTML = '<div class="flex items-center justify-between mb-1"><span class="font-mono text-[10px] font-bold text-white">\u265F ' + move + '</span><span class="font-mono text-[9px] text-slate-600">#' + idx + '</span></div><span class="font-mono text-[9px] text-slate-500">' + color + ' \u00B7 Move ' + Math.ceil(idx / 2) + '</span>';
+        commitLog.appendChild(entry);
+      });
+    }
+
+    function addMoveEntry(san, idx) {
+      var placeholder = commitLog.querySelector('.text-center');
+      if (placeholder) placeholder.remove();
+
+      var entry = document.createElement('div');
+      entry.className = 'p-3 bg-blue-950/30 rounded-lg border border-blue-500/20 transition-colors';
+      var color = idx % 2 === 1 ? 'White' : 'Black';
+      entry.innerHTML = '<div class="flex items-center justify-between mb-1"><span class="font-mono text-[10px] font-bold text-blue-400">\u265F ' + san + '</span><span class="font-mono text-[9px] text-blue-500">#' + idx + '</span></div><span class="font-mono text-[9px] text-slate-500">' + color + ' \u00B7 Move ' + Math.ceil(idx / 2) + '</span>';
+      commitLog.prepend(entry);
+
+      while (commitLog.children.length > 20) {
+        commitLog.removeChild(commitLog.lastChild);
+      }
+    }
+
+    // ── FEEDBACK ──
+    function showFeedback(msg, color) {
+      var colorMap = { red: '#f87171', blue: '#60a5fa', emerald: '#34d399', amber: '#fbbf24' };
+      feedback.textContent = msg;
+      feedback.style.color = colorMap[color] || '#94a3b8';
+      feedback.className = 'mt-3 font-mono text-xs';
+      feedback.classList.remove('hidden');
+      setTimeout(function() { feedback.classList.add('hidden'); }, 6000);
+    }
+
+    // ── INPUT HANDLER ──
+    submitBtn.addEventListener('click', function() {
+      if (queueEnabled && !isMyTurn) {
+        showFeedback('Wait for your turn!', 'amber');
+        return;
+      }
+      var san = moveInput.value.trim();
+      if (!san) return;
+      var result = chess.move(san);
+      if (!result) {
+        showFeedback('Illegal move: ' + san, 'red');
+        return;
+      }
+      chess.undo();
+      executeMove(san);
+      moveInput.value = '';
+    });
+
+    moveInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') submitBtn.click();
+    });
+
+    // ── VOTE RESTART ──
+    function sendVoteRestart() {
+      if (!socket || socket.readyState !== WebSocket.OPEN) {
+        showFeedback('Not connected to server', 'red');
+        return;
+      }
+      socket.send(JSON.stringify({ action: 'vote_restart' }));
+      showFeedback('You voted to restart the game', 'blue');
+    }
+
+    voteRestartBtn.addEventListener('click', sendVoteRestart);
+    voteRestartInline.addEventListener('click', sendVoteRestart);
+
+    // ── INIT ──
+    renderBoard();
+    updateUI();
+    connectWebSocket();
+  </script>
+</MainLayout>
