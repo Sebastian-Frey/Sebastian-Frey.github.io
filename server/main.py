@@ -125,6 +125,42 @@ board = chess.Board()
 move_history: list[str] = []
 move_count: int = 0
 restart_votes: set[str] = set()  # client IDs that voted to restart
+restart_timer: asyncio.Task | None = None  # 30s auto-restart countdown
+
+
+async def do_restart() -> None:
+    """Reset the game and notify all clients."""
+    global board, move_history, move_count, restart_timer
+    board.reset()
+    move_history.clear()
+    move_count = 0
+    restart_votes.clear()
+    if restart_timer and not restart_timer.done():
+        restart_timer.cancel()
+    restart_timer = None
+    print("[RESET] Game restarted")
+    await manager.broadcast({
+        "type": "init",
+        "fen": board.fen(),
+        "moves": [],
+        "move_count": 0,
+        "turn": "w",
+        "result": "*",
+    })
+    await manager.broadcast_queue_state()
+    schedule_github_sync()
+
+
+async def _restart_countdown() -> None:
+    """Wait 30s then auto-restart if no one voted against."""
+    await manager.broadcast({
+        "type": "restart_countdown",
+        "seconds": 30,
+    })
+    await asyncio.sleep(30)
+    if restart_votes:  # at least one vote still stands
+        print("[VOTE] 30s expired with no opposition — auto-restarting")
+        await do_restart()
 
 
 def get_result() -> str:
@@ -326,21 +362,10 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
                     "needed": needed,
                 })
                 if len(restart_votes) >= needed:
-                    board.reset()
-                    move_history.clear()
-                    move_count = 0
-                    restart_votes.clear()
-                    print("[RESET] Game restarted by vote")
-                    await manager.broadcast({
-                        "type": "init",
-                        "fen": board.fen(),
-                        "moves": [],
-                        "move_count": 0,
-                        "turn": "w",
-                        "result": "*",
-                    })
-                    await manager.broadcast_queue_state()
-                    schedule_github_sync()
+                    await do_restart()
+                elif restart_timer is None or restart_timer.done():
+                    # Start 30s countdown on first vote
+                    restart_timer = asyncio.create_task(_restart_countdown())
                 continue
 
             # ── Move handling ──
@@ -391,6 +416,8 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
             move_history.append(move_san)
             move_count += 1
             restart_votes.clear()  # clear restart votes on new move
+            if restart_timer and not restart_timer.done():
+                restart_timer.cancel()
 
             is_check = board.is_check()
             turn = "w" if board.turn == chess.WHITE else "b"
@@ -460,23 +487,7 @@ RESET_SECRET: str = environ.get("RESET_SECRET", "")
 async def reset_game(secret: str = "") -> dict:
     if not RESET_SECRET or secret != RESET_SECRET:
         return {"error": "unauthorized"}
-    global board, move_history, move_count
-    board = chess.Board()
-    move_history = []
-    move_count = 0
-    print("[RESET] Game reset to starting position")
-
-    await manager.broadcast({
-        "type": "init",
-        "fen": board.fen(),
-        "moves": [],
-        "move_count": 0,
-        "turn": "w",
-        "result": "*",
-    })
-
-    await manager.broadcast_queue_state()
-    schedule_github_sync()
+    await do_restart()
     return {"status": "reset", "fen": board.fen()}
 
 

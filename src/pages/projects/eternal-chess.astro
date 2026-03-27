@@ -787,6 +787,18 @@ socket.send(JSON.stringify(&#123;
         voteStatus.classList.remove('hidden');
         return;
       }
+
+      if (type === 'restart_countdown') {
+        var secs = data.seconds || 30;
+        voteStatus.classList.remove('hidden');
+        var countdownInterval = setInterval(function() {
+          secs--;
+          voteStatus.textContent = 'Auto-restart in ' + secs + 's if no opposition';
+          if (secs <= 0) clearInterval(countdownInterval);
+        }, 1000);
+        voteStatus.textContent = 'Auto-restart in ' + secs + 's if no opposition';
+        return;
+      }
     }
 
     // ── APPLY MOVE DATA (after animation or immediately) ──
