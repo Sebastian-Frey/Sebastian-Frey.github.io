@@ -826,7 +826,7 @@ socket.send(JSON.stringify(&#123;
       }
 
       // Show inline restart vote button during active games
-      if (!chess.isGameOver || !chess.isGameOver()) {
+      if (!chess.game_over()) {
         voteRestartInline.classList.remove('hidden');
       }
 
@@ -1111,13 +1111,14 @@ socket.send(JSON.stringify(&#123;
       var turn = chess.turn() === 'w' ? 'WHITE' : 'BLACK';
       turnEl.textContent = turn + ' TO MOVE';
       fenEl.textContent = chess.fen();
-      moveNumEl.textContent = Math.floor(chess.moveNumber());
+      var fenParts = chess.fen().split(' ');
+      moveNumEl.textContent = fenParts[5] || '1';
 
-      if (chess.isCheckmate()) {
+      if (chess.in_checkmate()) {
         var winner = chess.turn() === 'w' ? 'BLACK' : 'WHITE';
         resultEl.textContent = winner + ' WINS';
         resultEl.className = 'font-mono text-[10px] font-bold text-amber-400';
-      } else if (chess.isDraw()) {
+      } else if (chess.in_draw()) {
         resultEl.textContent = 'DRAW';
         resultEl.className = 'font-mono text-[10px] font-bold text-amber-400';
       } else {
