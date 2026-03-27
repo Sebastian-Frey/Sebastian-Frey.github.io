@@ -73,16 +73,6 @@ export const siteConfig = {
   ],
   experience: [
     {
-      company: "4youcast",
-      title: "Co-Founder & Lead Engineer",
-      dateRange: "Jan 2025 - Present",
-      bullets: [
-        "Building a personalized news-to-podcast platform using AI-powered assistant pipelines.",
-        "Implemented robust API orchestration and rate-limit handling for LLM-based workflows.",
-        "Developed a zero-caching architecture to handle unique, user-specific audio generation.",
-      ],
-    },
-    {
       company: "IMMOunited",
       title: "Data Scientist / Product Owner",
       dateRange: "Nov 2023 - Present",
@@ -90,6 +80,16 @@ export const siteConfig = {
         "Engineered nationwide real-estate price prediction tools utilizing mixed models and time series.",
         "Managed 1.8M records and 400 features to power internal and external client pricing tools.",
         "Served as the technical interface between business stakeholders and engineering for production ML systems.",
+      ],
+    },
+    {
+      company: "4youcast",
+      title: "Co-Founder & Lead Engineer",
+      dateRange: "Jan 2025 - Present",
+      bullets: [
+        "Building a personalized news-to-podcast platform using AI-powered assistant pipelines.",
+        "Implemented robust API orchestration and rate-limit handling for LLM-based workflows.",
+        "Developed a zero-caching architecture to handle unique, user-specific audio generation.",
       ],
     },
     {
