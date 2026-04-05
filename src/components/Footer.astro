@@ -1,5 +1,6 @@
 ---
 import { siteConfig } from "../config";
+import EmailLink from "./EmailLink.astro";
 
 const hasProjects = siteConfig.projects && siteConfig.projects.length > 0;
 const hasExperience = siteConfig.experience && siteConfig.experience.length > 0;
@@ -19,9 +20,8 @@ const hasEducation = siteConfig.education && siteConfig.education.length > 0;
           {siteConfig.title}
         </p>
         <div class="flex gap-x-6">
-          <a
-            href={`mailto:${siteConfig.social.email}`}
-            aria-label="Email"
+          <EmailLink
+            ariaLabel="Email"
             class="text-gray-600 transition-colors duration-300 hover:text-[var(--accent-color)]"
             style={`--accent-color: ${siteConfig.accentColor}`}
           >
@@ -43,7 +43,7 @@ const hasEducation = siteConfig.education && siteConfig.education.length > 0;
               ></path>
               <path d="M3 7l9 6l9 -6"></path>
             </svg>
-          </a>
+          </EmailLink>
           <a
             href={siteConfig.social.linkedin}
             target="_blank"

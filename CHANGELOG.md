@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## 2026-04-05
+
+### Changed
+- **Email obfuscation** — email address is now base64-encoded and assembled client-side via JS, preventing automated scraping from static HTML. Added reusable `EmailLink.astro` component used in Hero, Footer, and Eternal Chess pages.
+
 ## 2026-03-27
 
 ### Added

@@ -4,7 +4,7 @@ export const siteConfig = {
   description: "Portfolio website of Sebastian Frey",
   accentColor: "#1d4ed8",
   social: {
-    email: "sc.frey@aol.de",
+    emailEncoded: "c2MuZnJleUBhb2wuZGU=",
     linkedin: "https://www.linkedin.com/in/sebastian-frey",
     github: "https://www.github.com/Sebastian--Frey",
   },

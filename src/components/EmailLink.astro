@@ -1,0 +1,40 @@
+---
+interface Props {
+  ariaLabel?: string;
+  class?: string;
+  style?: string;
+  showText?: boolean;
+}
+
+import { siteConfig } from "../config";
+
+const {
+  ariaLabel = "Email",
+  class: className = "",
+  style: inlineStyle = "",
+  showText = false,
+} = Astro.props;
+const encoded = siteConfig.social.emailEncoded;
+---
+
+<a
+  href="#"
+  data-e={encoded}
+  aria-label={ariaLabel}
+  class:list={["obfuscated-email", className]}
+  style={inlineStyle}
+>
+  <slot />
+  {showText && <span class="email-text"></span>}
+</a>
+
+<script is:inline>
+  document.querySelectorAll("a.obfuscated-email").forEach(function (el) {
+    if (el.dataset.e) {
+      var decoded = atob(el.dataset.e);
+      el.href = "mailto:" + decoded;
+      var textSpan = el.querySelector(".email-text");
+      if (textSpan) textSpan.textContent = decoded;
+    }
+  });
+</script>

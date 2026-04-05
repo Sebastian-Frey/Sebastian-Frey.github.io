@@ -1,5 +1,6 @@
 ---
 import { siteConfig } from "../config";
+import EmailLink from "./EmailLink.astro";
 ---
 
 <div
@@ -154,10 +155,9 @@ import { siteConfig } from "../config";
     class="absolute bottom-0 left-0 right-0 p-8 sm:p-12 md:p-24 flex gap-x-4 sm:gap-x-6 md:gap-x-8 text-gray-700 animate-fade-in animation-delay-600"
   >
     {
-      siteConfig.social?.email && (
-        <a
-          href={`mailto:${siteConfig.social.email}`}
-          aria-label="Email"
+      siteConfig.social?.emailEncoded && (
+        <EmailLink
+          ariaLabel="Email"
           class="transition-colors duration-300 hover:text-[var(--accent-color)]"
         >
           <svg
@@ -176,7 +176,7 @@ import { siteConfig } from "../config";
             <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10z" />
             <path d="M3 7l9 6l9 -6" />
           </svg>
-        </a>
+        </EmailLink>
       )
     }
     {

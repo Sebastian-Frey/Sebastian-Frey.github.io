@@ -1,5 +1,6 @@
 ---
 import MainLayout from "../../layouts/MainLayout.astro";
+import EmailLink from "../../components/EmailLink.astro";
 const wsUrl = import.meta.env.PUBLIC_WS_URL || "ws://localhost:8000/ws";
 ---
 
@@ -113,7 +114,7 @@ const wsUrl = import.meta.env.PUBLIC_WS_URL || "ws://localhost:8000/ws";
               <div class="flex items-center justify-center gap-3 font-mono text-[11px]">
                 <span class="text-red-400 uppercase tracking-widest font-bold">Server Offline</span>
                 <span class="text-slate-500">—</span>
-                <span class="text-slate-400">The game server is currently down. Reach out at <a href="mailto:sc.frey@aol.de" class="text-blue-400 hover:text-blue-300 underline underline-offset-2 normal-case tracking-normal">sc.frey@aol.de</a></span>
+                <span class="text-slate-400">The game server is currently down. Reach out at <EmailLink showText class="text-blue-400 hover:text-blue-300 underline underline-offset-2 normal-case tracking-normal inline" /></span>
               </div>
             </div>
 
