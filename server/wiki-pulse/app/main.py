@@ -42,6 +42,7 @@ async def _startup() -> None:
             asyncio.create_task(clusterer.run_clusterer_weekly(), name="cluster-week"),
             asyncio.create_task(clusterer.run_clusterer_monthly(), name="cluster-month"),
             asyncio.create_task(ws.run_ws_poll(), name="ws-poll"),
+            asyncio.create_task(clusterer.run_eviction(), name="eviction"),
         ]
     )
     log.info("startup: %d background tasks launched", len(_tasks))

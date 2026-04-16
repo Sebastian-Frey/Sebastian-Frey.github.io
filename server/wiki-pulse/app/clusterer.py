@@ -284,3 +284,106 @@ async def run_clusterer_monthly() -> None:
         except Exception:
             log.exception("clusterer[month]: pipeline failed")
         await asyncio.sleep(3600)
+
+
+# ------------------------------------------------------------------
+# Eviction (32-day retention) + Monthly archive
+# ------------------------------------------------------------------
+
+_RETENTION_DAYS = 32
+_last_archived_month: str | None = None
+
+
+async def run_eviction() -> None:
+    """Daily job: evict data older than 32 days, archive monthly snapshot."""
+    global _last_archived_month
+    await asyncio.sleep(300)  # let everything else stabilize
+    while True:
+        try:
+            loop = asyncio.get_running_loop()
+            now = datetime.now(timezone.utc)
+
+            # ── 1. Archive monthly snapshot on month change ──────────
+            current_month = now.strftime("%Y-%m")
+            prev_month = (now.replace(day=1) - timedelta(days=1)).strftime("%Y-%m")
+
+            if _last_archived_month != prev_month:
+                # Check if we already archived this month in Supabase
+                sb = storage.get_supabase()
+                if sb is not None:
+                    existing = (
+                        sb.table("monthly_archives")
+                        .select("year_month")
+                        .eq("year_month", prev_month)
+                        .limit(1)
+                        .execute()
+                    )
+                    if not existing.data:
+                        # Fetch the latest monthly snapshot
+                        snap = (
+                            sb.table("cluster_snapshots")
+                            .select("*")
+                            .eq("period", "month")
+                            .order("period_start", desc=True)
+                            .limit(50)
+                            .execute()
+                        )
+                        if snap.data:
+                            latest_start = snap.data[0]["period_start"]
+                            month_clusters = [r for r in snap.data if r["period_start"] == latest_start]
+
+                            archive_rows = [
+                                {
+                                    "year_month": prev_month,
+                                    "cluster_id": c["cluster_id"],
+                                    "label": c["label"],
+                                    "size": c["size"],
+                                    "rep_titles": c["rep_titles"],
+                                    "top_terms": c["top_terms"],
+                                    "momentum": c.get("momentum"),
+                                    "centroid_x": c.get("centroid_x"),
+                                    "centroid_y": c.get("centroid_y"),
+                                    "total_articles": sum(r["size"] for r in month_clusters),
+                                    "total_noise": 0,  # not tracked in snapshot
+                                }
+                                for c in month_clusters
+                            ]
+                            sb.table("monthly_archives").upsert(archive_rows).execute()
+                            log.info("eviction: archived %d clusters for %s", len(archive_rows), prev_month)
+
+                _last_archived_month = prev_month
+
+            # ── 2. Evict old DuckDB data ─────────────────────────────
+            if state.db is not None:
+                def _evict():
+                    state.db.execute(
+                        f"DELETE FROM edit_buckets WHERE hour_bucket < now() - INTERVAL '{_RETENTION_DAYS} DAYS'"
+                    )
+                    deleted_buckets = state.db.execute("SELECT changes()").fetchone()[0]
+
+                    state.db.execute(
+                        f"""
+                        DELETE FROM articles
+                        WHERE title NOT IN (
+                            SELECT DISTINCT title FROM edit_buckets
+                        )
+                        AND last_edited < now() - INTERVAL '{_RETENTION_DAYS} DAYS'
+                        """
+                    )
+                    deleted_articles = state.db.execute("SELECT changes()").fetchone()[0]
+                    return deleted_buckets, deleted_articles
+
+                try:
+                    db, da = await loop.run_in_executor(None, _evict)
+                    if db > 0 or da > 0:
+                        log.info("eviction: deleted %d edit_buckets, %d articles (>%dd)", db, da, _RETENTION_DAYS)
+                except Exception:
+                    log.exception("eviction: duckdb cleanup failed")
+
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            log.exception("eviction: job failed")
+
+        # Run once per day (24h)
+        await asyncio.sleep(86400)

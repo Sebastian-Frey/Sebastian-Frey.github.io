@@ -35,6 +35,23 @@ create table ingest_stats (
   cluster_count int not null
 );
 
+-- Monthly archives: one permanent snapshot per month (12 rows/year × n clusters)
+create table monthly_archives (
+  year_month text not null,        -- e.g. '2026-04'
+  cluster_id int not null,
+  label text not null,
+  size int not null,
+  rep_titles text[] not null,
+  top_terms text[] not null,
+  momentum float,
+  centroid_x float,
+  centroid_y float,
+  total_articles int,              -- total clustered articles that month
+  total_noise int,                 -- noise articles that month
+  archived_at timestamptz not null default now(),
+  primary key (year_month, cluster_id)
+);
+
 -- RLS: public read-only for the anon key
 alter table cluster_snapshots enable row level security;
 alter table cluster_members   enable row level security;
@@ -43,3 +60,6 @@ alter table ingest_stats      enable row level security;
 create policy "anon read" on cluster_snapshots for select to anon using (true);
 create policy "anon read" on cluster_members   for select to anon using (true);
 create policy "anon read" on ingest_stats      for select to anon using (true);
+
+alter table monthly_archives enable row level security;
+create policy "anon read" on monthly_archives  for select to anon using (true);
