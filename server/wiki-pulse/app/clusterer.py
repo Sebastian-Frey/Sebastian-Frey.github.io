@@ -1,0 +1,286 @@
+"""HDBSCAN + UMAP cluster loops.
+
+Three cadences run as background asyncio tasks:
+
+* ``run_clusterer_daily``   — every 60 s over a 24 h window
+* ``run_clusterer_weekly``  — every 15 min over a 7 d window
+* ``run_clusterer_monthly`` — every 1 h over a 30 d window
+
+Each queries DuckDB for recently-edited articles with embeddings, runs
+HDBSCAN clustering, projects to 2-D via UMAP (Procrustes-aligned to the
+previous run), computes c-TF-IDF labels, and writes results to Supabase
+(``cluster_snapshots`` + ``cluster_members``).
+"""
+from __future__ import annotations
+
+import asyncio
+import logging
+from datetime import datetime, timedelta, timezone
+from functools import partial
+
+import hdbscan
+import numpy as np
+
+from . import config, storage
+from .labels import ctfidf_labels
+from .state import state
+from .umap_state import UmapState
+
+log = logging.getLogger(__name__)
+
+
+# ------------------------------------------------------------------
+# CPU-bound helpers (run in thread executor)
+# ------------------------------------------------------------------
+
+def _do_hdbscan(embeddings: np.ndarray, min_cluster_size: int) -> np.ndarray:
+    """Fit HDBSCAN and return cluster labels (-1 = noise)."""
+    clusterer = hdbscan.HDBSCAN(
+        min_cluster_size=min_cluster_size,
+        metric="euclidean",
+        cluster_selection_method="eom",
+    )
+    return clusterer.fit_predict(embeddings)
+
+
+def _do_umap(umap_st: UmapState, embeddings: np.ndarray) -> np.ndarray:
+    """Fit or transform UMAP, returning (N, 2) coordinates."""
+    if umap_st._reducer is None:
+        return umap_st.fit_initial(embeddings)
+    return umap_st.transform(embeddings)
+
+
+# ------------------------------------------------------------------
+# Core pipeline
+# ------------------------------------------------------------------
+
+async def _run_cluster_pipeline(period: str, lookback_hours: int) -> None:
+    """Cluster articles edited within *lookback_hours* and write to Supabase."""
+    if state.db is None:
+        return
+
+    loop = asyncio.get_running_loop()
+
+    # ---- 1. Query DuckDB (offloaded to avoid blocking event loop) --------
+    def _query_db():
+        return state.db.execute(
+            f"""
+            SELECT a.title, a.summary, a.embedding,
+                   COALESCE(SUM(eb.edit_count), 0) AS total_edits
+            FROM articles a
+            INNER JOIN edit_buckets eb ON eb.title = a.title
+            WHERE eb.hour_bucket > now() - INTERVAL '{lookback_hours} HOURS'
+              AND a.embedding IS NOT NULL
+            GROUP BY a.title, a.summary, a.embedding
+            ORDER BY total_edits DESC
+            LIMIT {config.MAX_CLUSTER_ARTICLES}
+            """
+        ).fetchall()
+
+    try:
+        rows = await loop.run_in_executor(None, _query_db)
+    except Exception:
+        log.exception("clusterer[%s]: duckdb query failed", period)
+        return
+
+    if not rows:
+        log.debug("clusterer[%s]: no articles in window", period)
+        return
+
+    titles = [r[0] for r in rows]
+    summaries = [r[1] or "" for r in rows]
+    embeddings = np.array([list(r[2]) for r in rows], dtype=np.float64)
+    edit_counts = {r[0]: int(r[3]) for r in rows}
+    n = len(titles)
+
+    # ---- 2. Early exit ---------------------------------------------------
+    if n < config.MIN_CLUSTER_SIZE:
+        log.info("clusterer[%s]: only %d articles (< %d), skipping", period, n, config.MIN_CLUSTER_SIZE)
+        return
+
+    # ---- 3. HDBSCAN (offloaded) -----------------------------------------
+    labels = await loop.run_in_executor(
+        None, partial(_do_hdbscan, embeddings, config.MIN_CLUSTER_SIZE)
+    )
+
+    valid_clusters = set(labels) - {-1}
+    if not valid_clusters:
+        log.info("clusterer[%s]: all %d articles are noise, skipping", period, n)
+        return
+
+    # ---- 4. UMAP (offloaded) --------------------------------------------
+    umap_path = f"{config.DATA_DIR}/umap_{period}.pkl"
+    umap_st = UmapState()
+    umap_st.load(umap_path)
+
+    coords_2d = await loop.run_in_executor(
+        None, partial(_do_umap, umap_st, embeddings)
+    )
+    coords_2d = umap_st.align_to_previous(coords_2d, titles)
+    umap_st.save(umap_path)
+
+    # ---- 5. c-TF-IDF labels ---------------------------------------------
+    docs_by_cluster: dict[int, list[str]] = {}
+    for i, cid in enumerate(labels):
+        if cid == -1:
+            continue
+        cid = int(cid)
+        docs_by_cluster.setdefault(cid, []).append(summaries[i])
+
+    cluster_terms = ctfidf_labels(docs_by_cluster, top_n=5)
+
+    # ---- 6. Per-cluster metadata -----------------------------------------
+    cluster_meta: dict[int, dict] = {}
+    for cid in valid_clusters:
+        cid = int(cid)
+        member_idx = [i for i in range(n) if int(labels[i]) == cid]
+        size = len(member_idx)
+
+        # Representative titles (closest to centroid)
+        cluster_embs = embeddings[member_idx]
+        centroid = cluster_embs.mean(axis=0)
+        centroid_norm = centroid / (np.linalg.norm(centroid) + 1e-9)
+        emb_norms = cluster_embs / (np.linalg.norm(cluster_embs, axis=1, keepdims=True) + 1e-9)
+        cosine_sims = emb_norms @ centroid_norm
+        top_k = min(5, size)
+        rep_idx = cosine_sims.argsort()[::-1][:top_k]
+        rep_titles = [titles[member_idx[j]] for j in rep_idx]
+
+        # Terms and label — use most representative title as label
+        terms = cluster_terms.get(cid, [])
+        # Primary: best rep title; fallback to 2nd if first is too short
+        if len(rep_titles) >= 2 and len(rep_titles[0]) < 6:
+            label = rep_titles[1]
+        elif rep_titles:
+            label = rep_titles[0]
+        elif terms:
+            label = " · ".join(terms[:3])
+        else:
+            label = f"Cluster {cid}"
+
+        # Momentum: mean edits per hour across members
+        total_member_edits = sum(edit_counts.get(titles[i], 0) for i in member_idx)
+        momentum = total_member_edits / max(lookback_hours, 1) / max(size, 1)
+
+        # Centroid in UMAP space
+        cx = float(coords_2d[member_idx, 0].mean())
+        cy = float(coords_2d[member_idx, 1].mean())
+
+        cluster_meta[cid] = {
+            "label": label,
+            "size": size,
+            "rep_titles": rep_titles,
+            "top_terms": terms,
+            "momentum": round(momentum, 4),
+            "centroid_x": round(cx, 4),
+            "centroid_y": round(cy, 4),
+        }
+
+    # ---- 7. period_start -------------------------------------------------
+    now = datetime.now(timezone.utc)
+    if period == "day":
+        period_start = now.date()
+    elif period == "week":
+        period_start = (now - timedelta(days=now.weekday())).date()
+    else:  # month
+        period_start = now.date().replace(day=1)
+
+    # ---- 8. Write to Supabase --------------------------------------------
+    sb = storage.get_supabase()
+    if sb is None:
+        log.warning("clusterer[%s]: supabase unavailable, skipping write", period)
+        return
+
+    try:
+        ps = str(period_start)
+
+        # Clear stale data for this period + period_start
+        sb.table("cluster_members").delete().eq("period", period).eq("period_start", ps).execute()
+        sb.table("cluster_snapshots").delete().eq("period", period).eq("period_start", ps).execute()
+
+        # Insert snapshots
+        snapshot_rows = [
+            {
+                "period": period,
+                "period_start": ps,
+                "cluster_id": cid,
+                "label": meta["label"],
+                "size": meta["size"],
+                "rep_titles": meta["rep_titles"],
+                "top_terms": meta["top_terms"],
+                "momentum": meta["momentum"],
+                "centroid_x": meta["centroid_x"],
+                "centroid_y": meta["centroid_y"],
+            }
+            for cid, meta in cluster_meta.items()
+        ]
+        sb.table("cluster_snapshots").upsert(snapshot_rows).execute()
+
+        # Insert members (batched)
+        member_rows = []
+        for i in range(n):
+            cid = int(labels[i])
+            if cid == -1:
+                continue
+            member_rows.append({
+                "period": period,
+                "period_start": ps,
+                "title": titles[i],
+                "cluster_id": cid,
+                "umap_x": round(float(coords_2d[i, 0]), 4),
+                "umap_y": round(float(coords_2d[i, 1]), 4),
+                "edit_count": edit_counts.get(titles[i], 0),
+            })
+
+        for i in range(0, len(member_rows), 500):
+            sb.table("cluster_members").upsert(member_rows[i : i + 500]).execute()
+
+    except Exception:
+        log.exception("clusterer[%s]: supabase write failed", period)
+        return
+
+    noise_count = int((labels == -1).sum())
+    log.info(
+        "clusterer[%s]: %d articles -> %d clusters (%d noise), wrote to supabase",
+        period, n, len(valid_clusters), noise_count,
+    )
+
+
+# ------------------------------------------------------------------
+# Async loop wrappers
+# ------------------------------------------------------------------
+
+async def run_clusterer_daily() -> None:
+    await asyncio.sleep(90)  # let embedder warm up
+    while True:
+        try:
+            await _run_cluster_pipeline("day", lookback_hours=24)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            log.exception("clusterer[day]: pipeline failed")
+        await asyncio.sleep(60)
+
+
+async def run_clusterer_weekly() -> None:
+    await asyncio.sleep(120)
+    while True:
+        try:
+            await _run_cluster_pipeline("week", lookback_hours=168)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            log.exception("clusterer[week]: pipeline failed")
+        await asyncio.sleep(900)
+
+
+async def run_clusterer_monthly() -> None:
+    await asyncio.sleep(180)
+    while True:
+        try:
+            await _run_cluster_pipeline("month", lookback_hours=720)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            log.exception("clusterer[month]: pipeline failed")
+        await asyncio.sleep(3600)

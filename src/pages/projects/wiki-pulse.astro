@@ -1,0 +1,929 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+const wikiWsUrl = import.meta.env.PUBLIC_WIKI_WS_URL || "ws://localhost:8000/ws";
+---
+
+<MainLayout title="Wiki Pulse — Live Dashboard">
+
+  <!-- NAV -->
+  <nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
+    <div class="max-w-7xl mx-auto px-4 h-14 flex justify-between items-center font-mono text-[11px] uppercase tracking-widest">
+      <a href="/" class="font-bold hover:text-blue-600 transition-colors">&larr; Sebastian Frey</a>
+      <div class="hidden md:flex gap-8">
+        <a href="/#about" class="hover:text-blue-600 transition-colors">About</a>
+        <a href="/#projects" class="text-blue-600 font-bold">Projects</a>
+        <a href="/#experience" class="hover:text-blue-600 transition-colors">Experience</a>
+        <a href="/#education" class="hover:text-blue-600 transition-colors">Education</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="https://github.com/Sebastian-Frey" target="_blank" class="text-slate-400 hover:text-slate-900 transition-colors">
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.042-1.416-4.042-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        </a>
+        <div id="wp-status" class="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-full text-[9px] font-bold tracking-wider">
+          <span id="wp-dot" class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+          <span id="wp-status-text" class="text-slate-400">CONNECTING</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-4 pt-24 pb-16">
+
+    <!-- HEADER + DESCRIPTION -->
+    <div class="mb-8">
+      <h1 class="text-5xl md:text-7xl font-black tracking-tighter leading-none uppercase mb-4">
+        Wiki<span class="text-blue-600">Pulse.</span>
+      </h1>
+      <p class="text-slate-500 font-mono text-sm leading-relaxed">
+        <strong class="text-slate-800">A real-time unsupervised topic discovery dashboard.</strong>
+        This pipeline ingests Wikipedia's live edit stream (~150 edits/min), computes 384-dim sentence embeddings with MiniLM-L6-v2,
+        clusters semantically related articles using HDBSCAN, and projects the topic landscape to 2D via Procrustes-aligned UMAP.
+        Everything below is live &mdash; the data refreshes every 30 seconds from a production backend.
+      </p>
+    </div>
+
+    <!-- GAUGE CARDS -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+      <div class="bg-white rounded-xl border border-slate-100 p-4 text-center shadow-sm">
+        <canvas id="gauge-epm" width="100" height="60" class="mx-auto"></canvas>
+        <span class="block font-mono text-[10px] text-slate-400 uppercase tracking-widest mt-1">Edits / Min</span>
+        <span class="block text-2xl font-black" id="wp-epm">&mdash;</span>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-100 p-4 text-center shadow-sm">
+        <canvas id="gauge-active" width="100" height="60" class="mx-auto"></canvas>
+        <span class="block font-mono text-[10px] text-slate-400 uppercase tracking-widest mt-1">Active Articles</span>
+        <span class="block text-2xl font-black" id="wp-active">&mdash;</span>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-100 p-4 text-center shadow-sm">
+        <canvas id="gauge-clusters" width="100" height="60" class="mx-auto"></canvas>
+        <span class="block font-mono text-[10px] text-slate-400 uppercase tracking-widest mt-1">Clusters</span>
+        <span class="block text-2xl font-black" id="wp-clusters">&mdash;</span>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-100 p-4 text-center shadow-sm">
+        <canvas id="gauge-embedded" width="100" height="60" class="mx-auto"></canvas>
+        <span class="block font-mono text-[10px] text-slate-400 uppercase tracking-widest mt-1">Embedded</span>
+        <span class="block text-2xl font-black" id="wp-embedded">&mdash;</span>
+      </div>
+    </div>
+
+    <!-- PERIOD SELECTOR -->
+    <div class="flex justify-center items-center gap-3 mb-6">
+      <span class="font-mono text-xs text-slate-400 uppercase tracking-widest font-bold">Period:</span>
+      <div class="flex gap-2 font-mono text-sm font-bold">
+        <button class="wp-period px-5 py-2 rounded-full bg-blue-600 text-white transition-all shadow-sm" data-p="day">Day</button>
+        <button class="wp-period px-5 py-2 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-all" data-p="week">Week</button>
+        <button class="wp-period px-5 py-2 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-all" data-p="month">Month</button>
+      </div>
+    </div>
+
+    <!-- ROW: SCATTER + TREEMAP -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-4">
+      <!-- UMAP Scatter + Side Legend -->
+      <div class="lg:col-span-7 bg-white rounded-xl border border-slate-100 p-4 shadow-md">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+          <span class="font-mono text-xs text-slate-700 uppercase tracking-[0.2em] font-black">UMAP Projection</span>
+        </div>
+        <div class="flex gap-4">
+          <!-- Canvas -->
+          <div class="relative flex-1 min-w-0">
+            <canvas id="umap-canvas" class="w-full rounded-lg border border-slate-100" style="aspect-ratio: 4/3; background: #f8fafc;"></canvas>
+            <div id="wp-tooltip" class="absolute hidden pointer-events-none bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 font-mono text-[10px] text-slate-800 shadow-lg z-10 max-w-[220px]">
+              <div id="tt-title" class="font-bold text-blue-600 truncate"></div>
+              <div id="tt-meta" class="text-slate-500"></div>
+            </div>
+            <div id="umap-empty" class="absolute inset-0 flex items-center justify-center">
+              <span class="font-mono text-slate-400 text-xs">Waiting for data&hellip;</span>
+            </div>
+          </div>
+          <!-- Side Legend -->
+          <div id="umap-legend" class="hidden lg:flex flex-col gap-2 w-44 shrink-0 font-mono text-[10px] overflow-y-auto max-h-[400px]"></div>
+        </div>
+      </div>
+      <!-- Treemap -->
+      <div class="lg:col-span-5 bg-white rounded-xl border border-slate-100 p-4 shadow-md">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="font-mono text-xs text-slate-700 uppercase tracking-[0.2em] font-black">Topic Treemap</span>
+          <span class="font-mono text-[9px] text-slate-400">(size = articles, color = momentum)</span>
+        </div>
+        <div class="relative">
+          <canvas id="treemap-canvas" class="w-full rounded-lg" style="aspect-ratio: 4/3; background: #f8fafc;"></canvas>
+          <div id="tm-tooltip" class="absolute hidden pointer-events-none bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 font-mono text-[10px] text-slate-800 shadow-lg z-10 max-w-[240px]">
+            <div id="tm-tt-title" class="font-bold text-slate-700 truncate"></div>
+            <div id="tm-tt-meta" class="text-slate-500"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOMENTUM HEATMAP -->
+    <div class="bg-white rounded-xl border border-slate-100 p-4 shadow-md mb-4">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="font-mono text-xs text-slate-700 uppercase tracking-[0.2em] font-black">Hourly Activity Heatmap</span>
+        <span class="font-mono text-[9px] text-slate-400">(rows = clusters, columns = hours, intensity = edits)</span>
+      </div>
+      <div class="relative">
+        <canvas id="heatmap-canvas" class="w-full rounded-lg" style="height: 220px; background: #ffffff;"></canvas>
+        <div id="hm-tooltip" class="absolute hidden pointer-events-none bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 font-mono text-[10px] text-slate-800 shadow-lg z-10 max-w-[240px]">
+          <div id="hm-tt-title" class="font-bold text-slate-700 truncate"></div>
+          <div id="hm-tt-meta" class="text-slate-500"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLUSTER CARDS WITH SPARKLINES -->
+    <div class="mb-8">
+      <div class="mb-5">
+        <div class="flex items-center gap-3 mb-2">
+          <span class="font-mono text-xs text-slate-700 uppercase tracking-[0.2em] font-black">Discovered Topics</span>
+          <span class="font-mono text-[10px] text-slate-400">(sorted by article count)</span>
+        </div>
+        <p class="font-mono text-xs text-slate-500 leading-relaxed">
+          Each topic is named after its most <strong class="text-slate-700">representative article</strong> &mdash; the one closest to the cluster centroid in embedding space.
+          The keywords below each title are the top <strong class="text-slate-700">c-TF-IDF</strong> terms that uniquely characterize the cluster compared to all others. Hover any card for the full title.
+        </p>
+      </div>
+      <div id="cluster-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+      <div id="cluster-empty" class="text-center py-12 font-mono text-slate-400 text-xs">Waiting for cluster data&hellip;</div>
+    </div>
+
+    <!-- METHODOLOGY (compact) -->
+    <details class="mb-8 bg-slate-50 rounded-xl border border-slate-100 p-4">
+      <summary class="font-mono text-[10px] text-slate-500 uppercase tracking-widest font-bold cursor-pointer hover:text-blue-600">Pipeline Methodology &mdash; click to expand</summary>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 font-mono text-sm text-slate-500 leading-relaxed">
+        <div>
+          <h4 class="font-black text-slate-900 uppercase text-xs mb-2">01. Stream Ingestion</h4>
+          <p>Wikimedia EventStreams SSE &rarr; async queue &rarr; hourly DuckDB rollups. Filters enwiki mainspace non-bot edits with exponential backoff reconnection.</p>
+        </div>
+        <div>
+          <h4 class="font-black text-slate-900 uppercase text-xs mb-2">02. Semantic Embedding</h4>
+          <p>Article summaries encoded to 384-dim unit vectors via all-MiniLM-L6-v2 (distilled Sentence-BERT). L2-normalized for cosine similarity via dot product. 24h LRU cache.</p>
+        </div>
+        <div>
+          <h4 class="font-black text-slate-900 uppercase text-xs mb-2">03. Density-Based Clustering</h4>
+          <p>HDBSCAN chosen over K-Means/GMM: no predefined cluster count, handles arbitrary shapes, naturally isolates noise. c-TF-IDF extracts discriminative labels per cluster.</p>
+        </div>
+        <div>
+          <h4 class="font-black text-slate-900 uppercase text-xs mb-2">04. Procrustes-Aligned UMAP</h4>
+          <p>384D &rarr; 2D projection via UMAP. SVD-based Procrustes rotation matching on overlapping anchors keeps the layout stable between runs. Cluster movements reflect real topic shifts.</p>
+        </div>
+      </div>
+    </details>
+
+    <!-- DATA ATTRIBUTION -->
+    <div class="mb-8 p-4 bg-slate-50 rounded-xl border border-slate-100 font-mono text-[10px] text-slate-400 leading-relaxed">
+      <strong class="text-slate-500">Data source &amp; license:</strong>
+      Edit data is sourced in real time from the
+      <a href="https://stream.wikimedia.org/" class="text-blue-500 hover:underline" target="_blank" rel="noopener">Wikimedia EventStreams API</a>.
+      Article summaries are fetched from the
+      <a href="https://en.wikipedia.org/api/rest_v1/" class="text-blue-500 hover:underline" target="_blank" rel="noopener">Wikipedia REST API</a>.
+      All Wikipedia content is available under the
+      <a href="https://creativecommons.org/licenses/by-sa/4.0/" class="text-blue-500 hover:underline" target="_blank" rel="noopener">Creative Commons Attribution-ShareAlike 4.0</a> license.
+      This project uses the data for non-commercial research and visualization purposes only.
+      Wikimedia&reg; is a registered trademark of the Wikimedia Foundation.
+    </div>
+
+    <!-- TECH PILLS -->
+    <div class="flex flex-wrap gap-2 font-mono">
+      <span class="px-3 py-1.5 bg-slate-50 rounded-full text-[9px] font-bold text-slate-500 uppercase border border-slate-100">HDBSCAN</span>
+      <span class="px-3 py-1.5 bg-slate-50 rounded-full text-[9px] font-bold text-slate-500 uppercase border border-slate-100">UMAP</span>
+      <span class="px-3 py-1.5 bg-slate-50 rounded-full text-[9px] font-bold text-slate-500 uppercase border border-slate-100">Sentence-BERT</span>
+      <span class="px-3 py-1.5 bg-slate-50 rounded-full text-[9px] font-bold text-slate-500 uppercase border border-slate-100">c-TF-IDF</span>
+      <span class="px-3 py-1.5 bg-slate-50 rounded-full text-[9px] font-bold text-slate-500 uppercase border border-slate-100">Procrustes</span>
+      <span class="px-3 py-1.5 bg-slate-50 rounded-full text-[9px] font-bold text-slate-500 uppercase border border-slate-100">DuckDB</span>
+      <span class="px-3 py-1.5 bg-slate-50 rounded-full text-[9px] font-bold text-slate-500 uppercase border border-slate-100">Supabase</span>
+      <span class="px-3 py-1.5 bg-slate-50 rounded-full text-[9px] font-bold text-slate-500 uppercase border border-slate-100">FastAPI</span>
+      <span class="px-3 py-1.5 bg-slate-50 rounded-full text-[9px] font-bold text-slate-500 uppercase border border-slate-100">WebSocket</span>
+      <span class="px-3 py-1.5 bg-slate-50 rounded-full text-[9px] font-bold text-slate-500 uppercase border border-slate-100">Docker</span>
+      <span class="px-3 py-1.5 bg-slate-50 rounded-full text-[9px] font-bold text-slate-500 uppercase border border-slate-100">asyncio</span>
+    </div>
+  </main>
+
+  <script define:vars={{ wikiWsUrl }}>
+    window.__WP_WS = wikiWsUrl;
+  </script>
+
+  <script is:inline>
+  (function () {
+    "use strict";
+
+    var WS_URL = window.__WP_WS || "ws://localhost:8000/ws";
+    // IBM Carbon palette: high contrast, corporate, 7 distinct colors
+    var C = ["#6929c4","#1192e8","#005d5d","#9f1853","#fa4d56","#198038","#002d9c","#b28600","#8a3ffc","#007d79","#ee538b","#0f62fe"];
+    var MAX_VIS_CLUSTERS = 7; // only show top 7 in scatter/legend to reduce clutter
+    var socket, reconn = 0, period = "day";
+    var clusters = [], members = [], activity = {}, highlighted = -1;
+    var topClusterIds = new Set(); // IDs of top 7 clusters by size
+
+    // ─── HELPERS ───
+    function $(id) { return document.getElementById(id); }
+    function dpr() { return window.devicePixelRatio || 1; }
+    function sizeC(cv) {
+      var r = cv.getBoundingClientRect(), d = dpr();
+      cv.width = r.width * d; cv.height = r.height * d;
+      var ctx = cv.getContext("2d"); ctx.setTransform(d,0,0,d,0,0);
+      return { w: r.width, h: r.height, ctx: ctx };
+    }
+
+    // ─── STATUS ───
+    function setStatus(on) {
+      var d = $("wp-dot"), t = $("wp-status-text");
+      if (d) d.className = "w-1.5 h-1.5 rounded-full " + (on ? "bg-emerald-500 animate-pulse" : "bg-slate-300");
+      if (t) { t.textContent = on ? "LIVE" : "OFFLINE"; t.className = on ? "text-emerald-600" : "text-slate-400"; }
+    }
+
+    // ─── STATS ───
+    function setStats(s) {
+      if (s.edits_per_min != null) { $("wp-epm").textContent = s.edits_per_min; drawGauge("gauge-epm", s.edits_per_min, 200); }
+      if (s.active_articles != null) { $("wp-active").textContent = s.active_articles.toLocaleString(); drawGauge("gauge-active", s.active_articles, 50000); }
+      if (s.cluster_count != null) { $("wp-clusters").textContent = s.cluster_count; drawGauge("gauge-clusters", s.cluster_count, 30); }
+      if (s.embedded_articles != null) { $("wp-embedded").textContent = s.embedded_articles.toLocaleString(); drawGauge("gauge-embedded", s.embedded_articles, 50000); }
+    }
+
+    // ═══════════════════════════════════════════════
+    // 1. PIPELINE THROUGHPUT GAUGES
+    // ═══════════════════════════════════════════════
+    function drawGauge(id, val, max) {
+      var cv = $(id); if (!cv) return;
+      var ctx = cv.getContext("2d");
+      var w = cv.width, h = cv.height;
+      ctx.clearRect(0,0,w,h);
+      var cx = w/2, cy = h - 4, r = Math.min(w/2 - 4, h - 8);
+      var pct = Math.min(val / max, 1);
+      // Background arc
+      ctx.beginPath(); ctx.arc(cx, cy, r, Math.PI, 0);
+      ctx.strokeStyle = "#e2e8f0"; ctx.lineWidth = 6; ctx.lineCap = "round"; ctx.stroke();
+      // Value arc
+      if (pct > 0) {
+        ctx.beginPath(); ctx.arc(cx, cy, r, Math.PI, Math.PI + Math.PI * pct);
+        var grad = ctx.createLinearGradient(0,0,w,0);
+        grad.addColorStop(0, "#3b82f6"); grad.addColorStop(1, "#06b6d4");
+        ctx.strokeStyle = grad; ctx.lineWidth = 6; ctx.lineCap = "round"; ctx.stroke();
+      }
+    }
+
+    // ═══════════════════════════════════════════════
+    // 3. UMAP SCATTER PLOT
+    // ═══════════════════════════════════════════════
+    var umapCv = $("umap-canvas");
+    var labelBoxes = []; // stored from drawScatter for hover detection: {x,y,w,h,cl}
+    var treemapRects = []; // stored from drawTreemap: {x,y,w,h,cl}
+    var heatmapCells = []; // stored from drawHeatmap: {x,y,w,h,label,hour,edits}
+
+    function bounds(pts) {
+      var xn = Infinity, xx = -Infinity, yn = Infinity, yx = -Infinity;
+      for (var i = 0; i < pts.length; i++) {
+        if (pts[i].umap_x < xn) xn = pts[i].umap_x; if (pts[i].umap_x > xx) xx = pts[i].umap_x;
+        if (pts[i].umap_y < yn) yn = pts[i].umap_y; if (pts[i].umap_y > yx) yx = pts[i].umap_y;
+      }
+      var p = 0.05, xr = (xx-xn)||1, yr = (yx-yn)||1;
+      return { xn: xn-xr*p, xx: xx+xr*p, yn: yn-yr*p, yx: yx+yr*p };
+    }
+
+    function mapPt(pt, b, w, h) {
+      return { x: ((pt.umap_x - b.xn) / (b.xx - b.xn)) * (w-24) + 12,
+               y: ((pt.umap_y - b.yn) / (b.yx - b.yn)) * (h-24) + 12 };
+    }
+
+    function computeTopClusters() {
+      var sorted = clusters.slice().sort(function(a,b) { return b.size - a.size; });
+      topClusterIds = new Set();
+      for (var i = 0; i < Math.min(MAX_VIS_CLUSTERS, sorted.length); i++) topClusterIds.add(sorted[i].cluster_id);
+    }
+
+    function drawScatter() {
+      if (!umapCv || !members.length) return;
+      $("umap-empty").style.display = "none";
+      var s = sizeC(umapCv), w = s.w, h = s.h, ctx = s.ctx;
+      ctx.fillStyle = "#f8fafc"; ctx.fillRect(0,0,w,h);
+      // Subtle grid
+      ctx.strokeStyle = "rgba(148,163,184,0.12)"; ctx.lineWidth = 0.5;
+      for (var gx = 0; gx < w; gx += 40) { ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,h); ctx.stroke(); }
+      for (var gy = 0; gy < h; gy += 40) { ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(w,gy); ctx.stroke(); }
+
+      // Filter to top clusters
+      var visPts = [];
+      for (var i = 0; i < members.length; i++) {
+        if (topClusterIds.has(members[i].cluster_id)) visPts.push(members[i]);
+      }
+      if (!visPts.length) return;
+      var b = bounds(visPts);
+
+      // Points — larger, log-scaled
+      for (var j = 0; j < visPts.length; j++) {
+        var m = visPts[j], p = mapPt(m, b, w, h);
+        var r = 3.5 + Math.log(Math.max(m.edit_count,1)+1) * 1.3;
+        ctx.globalAlpha = (highlighted >= 0 && m.cluster_id !== highlighted) ? 0.1 : 0.7;
+        ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI*2);
+        ctx.fillStyle = C[m.cluster_id % C.length]; ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      // ── Boxed labels with collision avoidance ──
+      var placed = []; // array of {x,y,w,h,cl} bounding boxes
+      var pad = 4; // padding inside box
+
+      // Sort clusters by size desc (largest get priority placement)
+      var sortedCl = clusters.filter(function(c) { return topClusterIds.has(c.cluster_id); })
+        .sort(function(a,b) { return b.size - a.size; });
+
+      for (var k = 0; k < sortedCl.length; k++) {
+        var cl = sortedCl[k];
+        var color = C[cl.cluster_id % C.length];
+        var dimmed = highlighted >= 0 && cl.cluster_id !== highlighted;
+        if (dimmed) continue; // skip dimmed labels entirely for clarity
+
+        // Flex font size: shrink for long labels
+        var lb = (cl.label || "").substring(0, 40);
+        var fontSize = lb.length > 30 ? 9 : lb.length > 20 ? 10 : 11;
+        ctx.font = "bold " + fontSize + "px 'IBM Plex Mono',monospace";
+        var tw = ctx.measureText(lb).width;
+        var boxW = tw + pad * 2 + 2;
+        var boxH = fontSize + pad * 2;
+
+        var cp = mapPt({umap_x: cl.centroid_x, umap_y: cl.centroid_y}, b, w, h);
+
+        // Try centroid first, then 8 offsets at 2 distances
+        var offsets = [
+          [0, -boxH - 6],  // above
+          [0, 12],          // below
+          [12, -boxH/2],    // right
+          [-boxW - 6, -boxH/2], // left
+          [12, -boxH - 6],  // NE
+          [-boxW - 6, -boxH - 6], // NW
+          [12, 12],          // SE
+          [-boxW - 6, 12],   // SW
+        ];
+        // Add farther offsets
+        for (var oi = 0; oi < 8; oi++) offsets.push([offsets[oi][0] * 2, offsets[oi][1] * 2]);
+
+        var bestX = cp.x - boxW / 2, bestY = cp.y - boxH - 6;
+        var foundSlot = false;
+        for (var oi2 = 0; oi2 < offsets.length; oi2++) {
+          var tx = cp.x + offsets[oi2][0];
+          var ty = cp.y + offsets[oi2][1];
+          // Clamp to canvas
+          tx = Math.max(2, Math.min(tx, w - boxW - 2));
+          ty = Math.max(2, Math.min(ty, h - boxH - 2));
+          // Check overlap with placed boxes
+          var overlap = false;
+          for (var pi = 0; pi < placed.length; pi++) {
+            var pb = placed[pi];
+            if (tx < pb.x + pb.w && tx + boxW > pb.x && ty < pb.y + pb.h && ty + boxH > pb.y) {
+              overlap = true; break;
+            }
+          }
+          if (!overlap) { bestX = tx; bestY = ty; foundSlot = true; break; }
+        }
+        if (!foundSlot) { bestX = cp.x - boxW/2; bestY = cp.y - boxH - 6; } // fallback
+
+        placed.push({x: bestX, y: bestY, w: boxW, h: boxH, cl: cl});
+
+        // Draw box: white bg + colored border
+        ctx.fillStyle = "rgba(255,255,255,0.9)";
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        // Rounded rect
+        var br = 4;
+        ctx.beginPath();
+        ctx.moveTo(bestX + br, bestY);
+        ctx.lineTo(bestX + boxW - br, bestY);
+        ctx.quadraticCurveTo(bestX + boxW, bestY, bestX + boxW, bestY + br);
+        ctx.lineTo(bestX + boxW, bestY + boxH - br);
+        ctx.quadraticCurveTo(bestX + boxW, bestY + boxH, bestX + boxW - br, bestY + boxH);
+        ctx.lineTo(bestX + br, bestY + boxH);
+        ctx.quadraticCurveTo(bestX, bestY + boxH, bestX, bestY + boxH - br);
+        ctx.lineTo(bestX, bestY + br);
+        ctx.quadraticCurveTo(bestX, bestY, bestX + br, bestY);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+
+        // Text
+        ctx.fillStyle = "#1e293b";
+        ctx.font = "bold " + fontSize + "px 'IBM Plex Mono',monospace";
+        ctx.textAlign = "left";
+        ctx.fillText(lb, bestX + pad + 1, bestY + fontSize + pad - 1);
+      }
+      labelBoxes = placed; // expose for hover detection
+    }
+
+    // Tooltip + click
+    if (umapCv) {
+      var raf = false;
+      umapCv.addEventListener("mousemove", function(e) {
+        if (raf || !members.length) return; raf = true;
+        requestAnimationFrame(function() { raf = false;
+          var rc = umapCv.getBoundingClientRect(), mx = e.clientX - rc.left, my = e.clientY - rc.top;
+          var tt = $("wp-tooltip");
+
+          // 1. Check if hovering over a label box
+          var hitLabel = null;
+          for (var li = 0; li < labelBoxes.length; li++) {
+            var lb = labelBoxes[li];
+            if (mx >= lb.x && mx <= lb.x + lb.w && my >= lb.y && my <= lb.y + lb.h) {
+              hitLabel = lb.cl; break;
+            }
+          }
+
+          if (hitLabel) {
+            var fullTitle = hitLabel.label || "";
+            var terms = (hitLabel.top_terms || []).slice(0, 3).join(", ");
+            $("tt-title").textContent = fullTitle;
+            $("tt-meta").textContent = hitLabel.size + " articles" + (terms ? " \u00B7 " + terms : "");
+            tt.classList.remove("hidden");
+            tt.style.left = Math.min(mx + 10, rc.width - 230) + "px";
+            tt.style.top = (my - 45) + "px";
+            umapCv.style.cursor = "pointer";
+          } else {
+            // 2. Check nearest data point
+            var visPts = [];
+            for (var vi = 0; vi < members.length; vi++) {
+              if (topClusterIds.has(members[vi].cluster_id)) visPts.push(members[vi]);
+            }
+            var b = bounds(visPts), best = -1, bd = 12;
+            for (var i = 0; i < visPts.length; i++) {
+              var p = mapPt(visPts[i], b, rc.width, rc.height);
+              var d = Math.sqrt((p.x-mx)*(p.x-mx)+(p.y-my)*(p.y-my));
+              if (d < bd) { bd = d; best = i; }
+            }
+            if (best >= 0) {
+              $("tt-title").textContent = visPts[best].title;
+              $("tt-meta").textContent = visPts[best].edit_count + " edits";
+              tt.classList.remove("hidden");
+              tt.style.left = Math.min(mx + 10, rc.width - 230) + "px";
+              tt.style.top = (my - 35) + "px";
+              umapCv.style.cursor = "default";
+            } else {
+              tt.classList.add("hidden");
+              umapCv.style.cursor = "default";
+            }
+          }
+        });
+      });
+      umapCv.addEventListener("mouseleave", function() { $("wp-tooltip").classList.add("hidden"); });
+      umapCv.addEventListener("click", function(e) {
+        if (!members.length) return;
+        var rc = umapCv.getBoundingClientRect(), mx = e.clientX-rc.left, my = e.clientY-rc.top;
+        var b = bounds(members), best = -1, bd = 15;
+        for (var i = 0; i < members.length; i++) {
+          var p = mapPt(members[i], b, rc.width, rc.height);
+          var d = Math.sqrt((p.x-mx)*(p.x-mx)+(p.y-my)*(p.y-my));
+          if (d < bd) { bd = d; best = i; }
+        }
+        highlighted = (best >= 0 && highlighted !== members[best].cluster_id) ? members[best].cluster_id : -1;
+        drawScatter(); highlightCards();
+      });
+    }
+
+    // ═══════════════════════════════════════════════
+    // 4. CLUSTER TREEMAP
+    // ═══════════════════════════════════════════════
+    // Squarified treemap layout (Bruls, Huizing, van Wijk)
+    function squarify(items, x, y, w, h) {
+      if (items.length === 0) return [];
+      if (items.length === 1) return [{x:x, y:y, w:w, h:h, cl:items[0]}];
+      var total = 0; for (var i = 0; i < items.length; i++) total += items[i].size;
+      if (total === 0) return [];
+      var rects = [];
+      layoutRow(items.slice(), x, y, w, h, total, rects);
+      return rects;
+    }
+    function layoutRow(items, x, y, w, h, total, out) {
+      if (items.length === 0) return;
+      if (items.length === 1) { out.push({x:x,y:y,w:w,h:h,cl:items[0]}); return; }
+      var horiz = w >= h;
+      var side = horiz ? h : w;
+      var row = [items[0]], rowSum = items[0].size;
+      var bestAR = worstAR(row, rowSum, side, total);
+      for (var i = 1; i < items.length; i++) {
+        var testRow = row.concat(items[i]);
+        var testSum = rowSum + items[i].size;
+        var ar = worstAR(testRow, testSum, side, total);
+        if (ar <= bestAR) { row = testRow; rowSum = testSum; bestAR = ar; }
+        else break;
+      }
+      // Layout the row
+      var rowFrac = rowSum / total;
+      var rowSize = horiz ? w * rowFrac : h * rowFrac;
+      var pos = horiz ? y : x;
+      for (var j = 0; j < row.length; j++) {
+        var frac = row[j].size / rowSum;
+        var cellSize = (horiz ? h : w) * frac;
+        if (horiz) { out.push({x:x, y:pos, w:rowSize, h:cellSize, cl:row[j]}); pos += cellSize; }
+        else { out.push({x:pos, y:y, w:cellSize, h:rowSize, cl:row[j]}); pos += cellSize; }
+      }
+      // Recurse remaining
+      var remaining = items.slice(row.length);
+      if (remaining.length > 0) {
+        var remTotal = total - rowSum;
+        if (horiz) layoutRow(remaining, x + rowSize, y, w - rowSize, h, remTotal, out);
+        else layoutRow(remaining, x, y + rowSize, w, h - rowSize, remTotal, out);
+      }
+    }
+    function worstAR(row, rowSum, side, total) {
+      var rowArea = (rowSum / total) * side * side; // approximate
+      var worst = 0;
+      for (var i = 0; i < row.length; i++) {
+        var frac = row[i].size / rowSum;
+        var rw = rowArea / side; // row width
+        var rh = side * frac;   // cell height
+        if (rw === 0 || rh === 0) continue;
+        var ar = Math.max(rw/rh, rh/rw);
+        if (ar > worst) worst = ar;
+      }
+      return worst;
+    }
+
+    function drawTreemap() {
+      var cv = $("treemap-canvas"); if (!cv || !clusters.length) return;
+      var s = sizeC(cv), w = s.w, h = s.h, ctx = s.ctx;
+      ctx.clearRect(0,0,w,h); ctx.fillStyle = "#f8fafc"; ctx.fillRect(0,0,w,h);
+      var sorted = clusters.slice().sort(function(a,b) { return b.size - a.size; });
+      var maxMom = 0; for (var j = 0; j < sorted.length; j++) if (sorted[j].momentum > maxMom) maxMom = sorted[j].momentum;
+      if (maxMom === 0) maxMom = 1;
+
+      var rects = squarify(sorted, 2, 2, w - 4, h - 4);
+
+      for (var m = 0; m < rects.length; m++) {
+        var rc = rects[m], cl = rc.cl;
+        var mom = cl.momentum / maxMom;
+        var r2 = Math.round(209 - mom * (209 - 63));
+        var g2 = Math.round(213 - mom * (213 - 71));
+        var b2 = Math.round(219 - mom * (219 - 82));
+        ctx.fillStyle = "rgb(" + r2 + "," + g2 + "," + b2 + ")";
+        // Rounded rect
+        var rad = 5, px = rc.x + 1, py = rc.y + 1, pw = Math.max(rc.w - 2, 0), ph = Math.max(rc.h - 2, 0);
+        ctx.beginPath();
+        ctx.moveTo(px + rad, py); ctx.lineTo(px + pw - rad, py);
+        ctx.quadraticCurveTo(px + pw, py, px + pw, py + rad);
+        ctx.lineTo(px + pw, py + ph - rad);
+        ctx.quadraticCurveTo(px + pw, py + ph, px + pw - rad, py + ph);
+        ctx.lineTo(px + rad, py + ph);
+        ctx.quadraticCurveTo(px, py + ph, px, py + ph - rad);
+        ctx.lineTo(px, py + rad);
+        ctx.quadraticCurveTo(px, py, px + rad, py);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.stroke();
+
+        // Label: detect orientation, flex font size
+        var isDark = mom > 0.35;
+        var lbl = (cl.label || "Cluster " + cl.cluster_id);
+        var isVert = rc.h > rc.w * 1.3;
+        var textCol = isDark ? "#ffffff" : "#1e293b";
+        var subCol = isDark ? "rgba(255,255,255,0.7)" : "#64748b";
+
+        if (isVert && rc.h > 50 && rc.w > 18) {
+          var fs = Math.max(8, Math.min(12, Math.floor(rc.w * 0.42)));
+          var maxC = Math.max(3, Math.floor((rc.h - 14) / (fs * 0.62)));
+          var tr = lbl.length > maxC ? lbl.substring(0, maxC - 1) + "\u2026" : lbl;
+          ctx.save();
+          ctx.translate(rc.x + rc.w / 2 + fs * 0.15, rc.y + rc.h - 6);
+          ctx.rotate(-Math.PI / 2);
+          ctx.fillStyle = textCol; ctx.font = "bold " + fs + "px 'IBM Plex Mono',monospace"; ctx.textAlign = "left";
+          ctx.fillText(tr, 0, 0);
+          ctx.font = (fs - 2) + "px 'IBM Plex Mono',monospace"; ctx.fillStyle = subCol;
+          ctx.fillText(cl.size + "", ctx.measureText(tr).width + 5, 0);
+          ctx.restore();
+        } else if (rc.w > 36 && rc.h > 22) {
+          var fsH = Math.max(8, Math.min(14, Math.floor(Math.min(rc.w / 7.5, rc.h * 0.32))));
+          ctx.font = "bold " + fsH + "px 'IBM Plex Mono',monospace"; ctx.textAlign = "left";
+          var maxCharsPerLine = Math.max(3, Math.floor((rc.w - 12) / (fsH * 0.6)));
+          var canWrap = rc.h > fsH * 2 + 16; // enough height for 2 lines + subtitle
+          var line1, line2 = "";
+          if (lbl.length > maxCharsPerLine && canWrap) {
+            // Word-wrap: break at last space within maxCharsPerLine
+            var breakAt = lbl.lastIndexOf(" ", maxCharsPerLine);
+            if (breakAt < 4) breakAt = maxCharsPerLine;
+            line1 = lbl.substring(0, breakAt);
+            var rest = lbl.substring(breakAt).trimStart();
+            line2 = rest.length > maxCharsPerLine ? rest.substring(0, maxCharsPerLine - 1) + "\u2026" : rest;
+          } else {
+            line1 = lbl.length > maxCharsPerLine ? lbl.substring(0, maxCharsPerLine - 1) + "\u2026" : lbl;
+          }
+          ctx.fillStyle = textCol;
+          ctx.fillText(line1, rc.x + 6, rc.y + fsH + 4);
+          var nextY = rc.y + fsH + 4;
+          if (line2) { nextY += fsH + 1; ctx.fillText(line2, rc.x + 6, nextY); }
+          if (rc.h > nextY - rc.y + fsH) {
+            ctx.font = Math.max(7, fsH - 2) + "px 'IBM Plex Mono',monospace"; ctx.fillStyle = subCol;
+            ctx.fillText(cl.size + " articles", rc.x + 6, nextY + fsH - 1);
+          }
+        } else if (rc.w > 16 && rc.h > 14) {
+          ctx.fillStyle = textCol; ctx.font = "bold 7px 'IBM Plex Mono',monospace"; ctx.textAlign = "center";
+          ctx.fillText(cl.size + "", rc.x + rc.w / 2, rc.y + rc.h / 2 + 3);
+        }
+      }
+      treemapRects = rects; // expose for hover
+    }
+
+    // ═══════════════════════════════════════════════
+    // 5. MOMENTUM HEATMAP
+    // ═══════════════════════════════════════════════
+    function drawHeatmap() {
+      var cv = $("heatmap-canvas"); if (!cv || !clusters.length) return;
+      var s = sizeC(cv), w = s.w, h = s.h, ctx = s.ctx;
+      ctx.clearRect(0,0,w,h);
+
+      // Collect all hours across all clusters
+      var allHours = {};
+      var clusterIds = [];
+      for (var i = 0; i < clusters.length; i++) {
+        var cid = clusters[i].cluster_id;
+        clusterIds.push(cid);
+        var act = activity[cid] || [];
+        for (var j = 0; j < act.length; j++) allHours[act[j].hour] = 1;
+      }
+      var hours = Object.keys(allHours).sort();
+      if (hours.length === 0 || clusterIds.length === 0) {
+        ctx.fillStyle = "#94a3b8"; ctx.font = "12px 'IBM Plex Mono',monospace";
+        ctx.textAlign = "center"; ctx.fillText("Activity data loading\u2026", w/2, h/2);
+        return;
+      }
+
+      var labelW = 90, padT = 20, padB = 30;
+      var cellW = (w - labelW) / hours.length;
+      var cellH = Math.min((h - padT - padB) / clusterIds.length, 24);
+
+      // Find max for color scale
+      var maxVal = 1;
+      for (var ci = 0; ci < clusterIds.length; ci++) {
+        var act2 = activity[clusterIds[ci]] || [];
+        for (var ai = 0; ai < act2.length; ai++) if (act2[ai].edits > maxVal) maxVal = act2[ai].edits;
+      }
+
+      // Build lookup
+      var lookup = {};
+      for (var li = 0; li < clusterIds.length; li++) {
+        var a3 = activity[clusterIds[li]] || [];
+        for (var lj = 0; lj < a3.length; lj++) lookup[clusterIds[li] + "_" + a3[lj].hour] = a3[lj].edits;
+      }
+
+      // Draw cells + store for hover
+      var cells = [];
+      for (var row = 0; row < clusterIds.length; row++) {
+        var cid2 = clusterIds[row];
+        var cl2 = null;
+        for (var fi = 0; fi < clusters.length; fi++) if (clusters[fi].cluster_id === cid2) { cl2 = clusters[fi]; break; }
+        var label = cl2 ? (cl2.label || "").substring(0, 12) : "C" + cid2;
+        var fullLabel = cl2 ? (cl2.label || "") : "Cluster " + cid2;
+        ctx.fillStyle = "#64748b"; ctx.font = "9px 'IBM Plex Mono',monospace";
+        ctx.textAlign = "right";
+        ctx.fillText(label, labelW - 6, padT + row * cellH + cellH / 2 + 3);
+
+        for (var col = 0; col < hours.length; col++) {
+          var val = lookup[cid2 + "_" + hours[col]] || 0;
+          var intensity = val / maxVal;
+          var cr = Math.round(241 - intensity * (241 - 59));
+          var cg = Math.round(245 - intensity * (245 - 130));
+          var cb = Math.round(249 - intensity * (249 - 246));
+          ctx.fillStyle = "rgb(" + cr + "," + cg + "," + cb + ")";
+          var cx = labelW + col * cellW, cy2 = padT + row * cellH;
+          ctx.fillRect(cx, cy2, cellW - 1, cellH - 1);
+          cells.push({x: cx, y: cy2, w: cellW - 1, h: cellH - 1, label: fullLabel, hour: hours[col], edits: val});
+        }
+      }
+      heatmapCells = cells;
+
+      // Hour labels
+      ctx.fillStyle = "#94a3b8"; ctx.font = "8px 'IBM Plex Mono',monospace"; ctx.textAlign = "center";
+      var step = Math.max(1, Math.floor(hours.length / 12));
+      for (var hi = 0; hi < hours.length; hi += step) {
+        ctx.fillText(hours[hi], labelW + hi * cellW + cellW / 2, h - 8);
+      }
+    }
+
+    // ═══════════════════════════════════════════════
+    // CLUSTER CARDS + SPARKLINES
+    // ═══════════════════════════════════════════════
+    function renderCards() {
+      var grid = $("cluster-grid"), empty = $("cluster-empty");
+      if (!grid) return;
+      if (!clusters.length) { grid.innerHTML = ""; if (empty) empty.style.display = ""; return; }
+      if (empty) empty.style.display = "none";
+      // Sort by article count descending
+      var sorted = clusters.slice().sort(function(a,b) { return b.size - a.size; });
+      var html = "";
+      for (var i = 0; i < sorted.length; i++) {
+        var c = sorted[i], col = C[c.cluster_id % C.length];
+        var terms = (c.top_terms || []).slice(0,4);
+        var reps = (c.rep_titles || []).slice(0,3);
+        var mom = c.momentum != null ? c.momentum.toFixed(2) : "0";
+        var fullLabel = c.label || "Cluster " + c.cluster_id;
+        var cardTerms = (c.top_terms || []).slice(0, 3).join(", ");
+        var titleAttr = fullLabel + (cardTerms ? " \u2014 " + cardTerms : "") + " (" + c.size + " articles)";
+        html += '<div class="wp-card bg-white rounded-xl border border-slate-100 shadow-sm p-4 cursor-pointer hover:shadow-md hover:border-blue-200 transition-all" data-cid="' + c.cluster_id + '" title="' + titleAttr.replace(/"/g, "&quot;") + '">';
+        // Header row
+        html += '<div class="flex items-center gap-2 mb-2 min-w-0">';
+        html += '<span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:' + col + '"></span>';
+        html += '<span class="font-black text-xs uppercase tracking-tight truncate min-w-0 flex-1">' + fullLabel + '</span>';
+        html += '<span class="font-mono text-[9px] text-slate-400 shrink-0 whitespace-nowrap">' + c.size + '</span>';
+        html += '</div>';
+        // Sparkline canvas
+        html += '<canvas class="wp-spark w-full rounded" data-cid="' + c.cluster_id + '" height="32" style="height:32px;"></canvas>';
+        // Meta
+        html += '<div class="flex items-center gap-3 mt-2 font-mono text-[9px] text-slate-400">';
+        html += '<span><strong class="text-slate-700">' + mom + '</strong> edits/hr</span>';
+        html += '</div>';
+        // Terms
+        if (terms.length) {
+          html += '<div class="flex flex-wrap gap-1 mt-2">';
+          for (var t = 0; t < terms.length; t++)
+            html += '<span class="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[8px] font-bold uppercase">' + terms[t] + '</span>';
+          html += '</div>';
+        }
+        // Reps
+        if (reps.length) html += '<div class="font-mono text-[8px] text-slate-400 mt-1.5 truncate">' + reps.join(" \u00B7 ") + '</div>';
+        html += '</div>';
+      }
+      grid.innerHTML = html;
+      // Draw sparklines
+      drawSparklines();
+      // Click handlers
+      var cards = grid.querySelectorAll(".wp-card");
+      for (var ci = 0; ci < cards.length; ci++) {
+        cards[ci].addEventListener("click", function() {
+          var cid = parseInt(this.getAttribute("data-cid"), 10);
+          highlighted = (highlighted === cid) ? -1 : cid;
+          drawScatter(); highlightCards();
+        });
+      }
+    }
+
+    function drawSparklines() {
+      var canvases = document.querySelectorAll(".wp-spark");
+      for (var i = 0; i < canvases.length; i++) {
+        var cv = canvases[i];
+        var cid = parseInt(cv.getAttribute("data-cid"), 10);
+        var act = activity[cid] || [];
+        var ctx = cv.getContext("2d");
+        var w = cv.offsetWidth, h = 32;
+        cv.width = w * dpr(); cv.height = h * dpr();
+        ctx.setTransform(dpr(),0,0,dpr(),0,0);
+        ctx.clearRect(0,0,w,h);
+        if (act.length < 2) {
+          ctx.fillStyle = "#f1f5f9"; ctx.fillRect(0,0,w,h);
+          ctx.fillStyle = "#cbd5e1"; ctx.font = "8px 'IBM Plex Mono',monospace"; ctx.textAlign = "center";
+          ctx.fillText("no hourly data yet", w/2, h/2 + 3);
+          continue;
+        }
+        // Find max
+        var mx = 1;
+        for (var j = 0; j < act.length; j++) if (act[j].edits > mx) mx = act[j].edits;
+        // Draw area
+        ctx.fillStyle = "#f1f5f9"; ctx.fillRect(0,0,w,h);
+        var col = C[cid % C.length];
+        ctx.beginPath();
+        ctx.moveTo(0, h);
+        for (var k = 0; k < act.length; k++) {
+          var x = (k / (act.length - 1)) * w;
+          var y = h - (act[k].edits / mx) * (h - 4) - 2;
+          ctx.lineTo(x, y);
+        }
+        ctx.lineTo(w, h); ctx.closePath();
+        ctx.fillStyle = col + "18"; ctx.fill();
+        // Draw line
+        ctx.beginPath();
+        for (var l = 0; l < act.length; l++) {
+          var x2 = (l / (act.length - 1)) * w;
+          var y2 = h - (act[l].edits / mx) * (h - 4) - 2;
+          l === 0 ? ctx.moveTo(x2, y2) : ctx.lineTo(x2, y2);
+        }
+        ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.stroke();
+      }
+    }
+
+    function highlightCards() {
+      var cards = document.querySelectorAll(".wp-card");
+      for (var i = 0; i < cards.length; i++) {
+        var cid = parseInt(cards[i].getAttribute("data-cid"), 10);
+        if (highlighted >= 0 && cid === highlighted) {
+          cards[i].classList.add("ring-2","ring-blue-500","border-blue-300");
+        } else {
+          cards[i].classList.remove("ring-2","ring-blue-500","border-blue-300");
+        }
+      }
+    }
+
+    // ─── LEGEND ───
+    function drawLegend() {
+      var el = $("umap-legend"); if (!el || !clusters.length) return;
+      // Sort by size desc
+      var sorted = clusters.slice().filter(function(c) { return topClusterIds.has(c.cluster_id); })
+        .sort(function(a,b) { return b.size - a.size; });
+      var h = "";
+      for (var i = 0; i < sorted.length; i++) {
+        var c = sorted[i], col = C[c.cluster_id % C.length];
+        var lb = (c.label || "").substring(0, 28);
+        var terms = (c.top_terms || []).slice(0, 3).join(", ");
+        h += '<div class="flex items-start gap-2 py-1.5 border-b border-slate-50 last:border-0">';
+        h += '<span class="w-2.5 h-2.5 rounded shrink-0 mt-0.5" style="background:' + col + '"></span>';
+        h += '<div class="min-w-0">';
+        h += '<div class="text-[10px] text-slate-700 font-bold leading-tight truncate">' + lb + '</div>';
+        if (terms) h += '<div class="text-[9px] text-slate-400 leading-tight mt-0.5 truncate">' + terms + '</div>';
+        h += '<div class="text-[8px] text-slate-300 mt-0.5">' + c.size + ' articles</div>';
+        h += '</div></div>';
+      }
+      el.innerHTML = h;
+    }
+
+    // ─── TREEMAP HOVER ───
+    var tmCv = $("treemap-canvas");
+    if (tmCv) {
+      tmCv.addEventListener("mousemove", function(e) {
+        var rc = tmCv.getBoundingClientRect(), mx = e.clientX - rc.left, my = e.clientY - rc.top;
+        var tt = $("tm-tooltip"), hit = null;
+        for (var i = 0; i < treemapRects.length; i++) {
+          var r = treemapRects[i];
+          if (mx >= r.x && mx <= r.x + r.w && my >= r.y && my <= r.y + r.h) { hit = r.cl; break; }
+        }
+        if (hit) {
+          var terms = (hit.top_terms || []).slice(0,3).join(", ");
+          $("tm-tt-title").textContent = hit.label || "";
+          $("tm-tt-meta").textContent = hit.size + " articles \u00B7 " + (hit.momentum || 0).toFixed(2) + " edits/hr" + (terms ? " \u00B7 " + terms : "");
+          tt.classList.remove("hidden");
+          tt.style.left = Math.min(mx + 10, rc.width - 250) + "px";
+          tt.style.top = Math.max(my - 40, 4) + "px";
+        } else { tt.classList.add("hidden"); }
+      });
+      tmCv.addEventListener("mouseleave", function() { $("tm-tooltip").classList.add("hidden"); });
+    }
+
+    // ─── HEATMAP HOVER ───
+    var hmCv = $("heatmap-canvas");
+    if (hmCv) {
+      hmCv.addEventListener("mousemove", function(e) {
+        var rc = hmCv.getBoundingClientRect(), mx = e.clientX - rc.left, my = e.clientY - rc.top;
+        var tt = $("hm-tooltip"), hit = null;
+        for (var i = 0; i < heatmapCells.length; i++) {
+          var c = heatmapCells[i];
+          if (mx >= c.x && mx <= c.x + c.w && my >= c.y && my <= c.y + c.h) { hit = c; break; }
+        }
+        if (hit) {
+          $("hm-tt-title").textContent = hit.label;
+          $("hm-tt-meta").textContent = hit.hour + " \u2014 " + hit.edits + " edits";
+          tt.classList.remove("hidden");
+          tt.style.left = Math.min(mx + 10, rc.width - 250) + "px";
+          tt.style.top = Math.max(my - 40, 4) + "px";
+        } else { tt.classList.add("hidden"); }
+      });
+      hmCv.addEventListener("mouseleave", function() { $("hm-tooltip").classList.add("hidden"); });
+    }
+
+    // ─── PERIOD TOGGLE ───
+    var pBtns = document.querySelectorAll(".wp-period");
+    for (var pi = 0; pi < pBtns.length; pi++) {
+      pBtns[pi].addEventListener("click", function() {
+        var p = this.getAttribute("data-p");
+        if (p === period) return;
+        period = p;
+        for (var bi = 0; bi < pBtns.length; bi++) {
+          pBtns[bi].className = "wp-period px-5 py-2 rounded-full transition-all " +
+            (pBtns[bi].getAttribute("data-p") === p ? "bg-blue-600 text-white shadow-sm" : "bg-slate-100 text-slate-500 hover:bg-slate-200");
+        }
+        if (socket && socket.readyState === 1) socket.send(JSON.stringify({type:"subscribe",period:p}));
+      });
+    }
+
+    // ─── FULL RENDER ───
+    function renderAll() {
+      computeTopClusters();
+      drawScatter(); drawTreemap(); drawHeatmap(); renderCards(); drawLegend();
+    }
+
+    // ─── RESIZE ───
+    window.addEventListener("resize", function() { renderAll(); });
+
+    // ─── WEBSOCKET ───
+    function connect() {
+      try { socket = new WebSocket(WS_URL); } catch(e) { return recon(); }
+      socket.onopen = function() { reconn = 0; setStatus(true); };
+      socket.onmessage = function(e) {
+        var d; try { d = JSON.parse(e.data); } catch(_) { return; }
+        if (d.type === "init") {
+          if (d.stats) setStats(d.stats);
+          if (d.snapshot) {
+            clusters = d.snapshot.clusters || [];
+            members = d.snapshot.members || [];
+            activity = d.snapshot.activity || {};
+            renderAll();
+          }
+        } else if (d.type === "stats") {
+          setStats(d);
+        } else if (d.type === "snapshot") {
+          clusters = d.clusters || [];
+          members = d.members || [];
+          activity = d.activity || {};
+          renderAll();
+        }
+      };
+      socket.onclose = function() { setStatus(false); recon(); };
+      socket.onerror = function() { setStatus(false); };
+    }
+    function recon() { var t = Math.min(1000 * Math.pow(2, reconn), 30000); reconn++; setTimeout(connect, t); }
+
+    // ─── BOOT ───
+    connect();
+  })();
+  </script>
+
+</MainLayout>

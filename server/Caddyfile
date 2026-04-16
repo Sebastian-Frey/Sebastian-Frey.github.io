@@ -1,3 +1,7 @@
 chess.itssebastianfrey.com {
 	reverse_proxy chess-backend:8000
 }
+
+wiki.itssebastianfrey.com {
+	reverse_proxy wikipulse:8000
+}

@@ -7,6 +7,16 @@ services:
       - .env
     restart: unless-stopped
 
+  wikipulse:
+    build: ./wiki-pulse
+    expose:
+      - "8000"
+    env_file:
+      - .env
+    volumes:
+      - wikipulse_data:/var/lib/wikipulse
+    restart: unless-stopped
+
   caddy:
     image: caddy:2
     ports:
@@ -18,8 +28,10 @@ services:
       - caddy_config:/config
     depends_on:
       - chess-backend
+      - wikipulse
     restart: unless-stopped
 
 volumes:
   caddy_data:
   caddy_config:
+  wikipulse_data:

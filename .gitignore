@@ -12,7 +12,8 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-
+# docs
+*.docx  
 # environment variables
 .env
 .env.production
@@ -25,3 +26,4 @@ pnpm-debug.log*
 
 # claude code
 .claude/
+__pycache__/

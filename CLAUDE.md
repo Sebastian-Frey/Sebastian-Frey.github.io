@@ -31,6 +31,7 @@ npm run preview  # preview built site
   - `latent-discovery.astro` — Clustering comparison (K-Means/GMM/HDBSCAN)
   - `sentinel-ltv.astro` — XGBoost churn prediction
   - `eternal-chess.astro` — Live multiplayer chess via WebSocket
+  - `wiki-pulse.astro` — Real-time Wikipedia topic clustering dashboard (UMAP scatter + live WS)
 - `src/styles/global.css` — Tailwind imports + base styles
 - `public/images/projects/` — Project screenshots and visualizations
 
@@ -68,8 +69,22 @@ The frontend (`eternal-chess.astro`) and server communicate via JSON messages:
 ```
 GITHUB_TOKEN=...          # GitHub PAT for game state sync (server-side only)
 GITHUB_REPO=...           # e.g. Sebastian-Frey/eternal-chess
-PUBLIC_WS_URL=...         # WebSocket URL injected into frontend at build time
+PUBLIC_WS_URL=...         # WebSocket URL injected into Eternal Chess at build time
+PUBLIC_WIKI_WS_URL=...    # WebSocket URL injected into Wiki Pulse at build time
 ```
+
+## Wiki Pulse (WebSocket Protocol)
+
+The frontend (`wiki-pulse.astro`) connects to the Wiki Pulse backend via WebSocket:
+
+| Direction | Type | When | Payload |
+|-----------|------|------|---------|
+| Server → Client | `init` | On connect | `{type, period, stats, snapshot: {clusters, members}}` |
+| Server → Client | `stats` | Every 30s | `{type, edits_per_min, active_articles, cluster_count, embedded_articles}` |
+| Server → Client | `snapshot` | New cluster data | `{type, period, period_start, clusters, members}` |
+| Client → Server | `subscribe` | Period change | `{type: "subscribe", period: "day|week|month"}` |
+
+The WS URL is set via `PUBLIC_WIKI_WS_URL` in `.env` (build-time injection via `define:vars`).
 
 ## Key Conventions
 

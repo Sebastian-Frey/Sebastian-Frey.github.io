@@ -64,6 +64,13 @@ export const siteConfig = {
       skills: ["chess.js", "WebSocket", "python-chess", "FastAPI", "Real-Time"],
     },
     {
+      name: "Wiki Pulse",
+      description:
+        "Real-time unsupervised topic discovery on Wikipedia's live edit stream. Embeds articles with Sentence-BERT, clusters with HDBSCAN, and visualizes the evolving topic landscape via UMAP on a live WebSocket dashboard.",
+      link: "projects/wiki-pulse",
+      skills: ["HDBSCAN", "UMAP", "Sentence-BERT", "DuckDB", "Supabase", "FastAPI", "WebSocket", "Docker", "c-TF-IDF"],
+    },
+    {
       name: "SentinelLTV",
       description:
         "An end-to-end ML pipeline for high-throughput churn prediction. Features automated preprocessing, GridSearch hyperparameter optimization for XGBoost, and production-grade validation strategies to forecast customer lifetime value (LTV).",

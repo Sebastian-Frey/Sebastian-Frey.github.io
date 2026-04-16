@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+httpx
+httpx-sse
+python-dotenv
+duckdb
+supabase
+numpy
+# CPU-only torch keeps the image lean (~200 MB vs ~2 GB with CUDA wheels).
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+sentence-transformers
+scikit-learn
+scipy
+# Clustering stack, used in phase 4:
+hdbscan
+umap-learn
