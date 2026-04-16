@@ -22,6 +22,7 @@ jobs:
         run: npx astro build
         env:
           PUBLIC_WS_URL: wss://chess.itssebastianfrey.com/ws
+          PUBLIC_WIKI_WS_URL: wss://wiki.itssebastianfrey.com/ws
 
       - name: Upload
         uses: actions/upload-pages-artifact@v3
