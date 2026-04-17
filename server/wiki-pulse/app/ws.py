@@ -20,7 +20,7 @@ router = APIRouter()
 log = logging.getLogger(__name__)
 
 VALID_PERIODS = {"day", "week", "month"}
-SUBSCRIBE_COOLDOWN = 5.0  # seconds between subscribe messages per client
+SUBSCRIBE_COOLDOWN = 1.0  # seconds between subscribe messages per client
 
 
 # ------------------------------------------------------------------
@@ -45,17 +45,18 @@ class ConnectionManager:
         self.active.pop(cid, None)
         log.info("ws: client %s disconnected (%d total)", cid, len(self.active))
 
-    def set_period(self, cid: str, period: str) -> bool:
-        """Update client's period. Returns False if rate-limited."""
+    def set_period(self, cid: str, period: str) -> float:
+        """Update client's period. Returns 0.0 on success, else seconds until cooldown clears."""
         entry = self.active.get(cid)
         if entry is None:
-            return False
+            return 0.0
         ws, _, last_sub = entry
         now = time.monotonic()
-        if now - last_sub < SUBSCRIBE_COOLDOWN:
-            return False
+        remaining = SUBSCRIBE_COOLDOWN - (now - last_sub)
+        if remaining > 0:
+            return remaining
         self.active[cid] = (ws, period, now)
-        return True
+        return 0.0
 
     def get_period(self, cid: str) -> str:
         entry = self.active.get(cid)
@@ -258,16 +259,17 @@ _last_seen: dict[str, str | None] = {"day": None, "week": None, "month": None}
 async def run_ws_poll() -> None:
     """Poll stats and detect new snapshots every 30 s, broadcast to clients."""
     await asyncio.sleep(10)  # let other services warm up
+    loop = asyncio.get_running_loop()
     while True:
         try:
             # Broadcast stats to everyone
             if manager.active:
-                stats = _compute_stats()
+                stats = await loop.run_in_executor(None, _compute_stats)
                 await manager.broadcast_all({"type": "stats", **stats})
 
                 # Check for new snapshots per active period
                 for period in manager.periods_with_clients():
-                    snap = _fetch_snapshot(period)
+                    snap = await loop.run_in_executor(None, _fetch_snapshot, period)
                     if snap is None:
                         continue
                     ps = snap.get("period_start")
@@ -291,12 +293,13 @@ async def run_ws_poll() -> None:
 
 @router.websocket("/ws")
 async def ws_endpoint(websocket: WebSocket) -> None:
+    loop = asyncio.get_running_loop()
     cid = await manager.connect(websocket)
     try:
-        # Send init payload
-        stats = _compute_stats()
+        # Send init payload — both helpers are sync I/O, offload so we don't block the loop
         period = manager.get_period(cid)
-        snap = _fetch_snapshot(period) or {
+        stats = await loop.run_in_executor(None, _compute_stats)
+        snap = await loop.run_in_executor(None, _fetch_snapshot, period) or {
             "period": period, "period_start": None, "clusters": [], "members": []
         }
         await manager.send_to(cid, {
@@ -320,9 +323,17 @@ async def ws_endpoint(websocket: WebSocket) -> None:
                 new_period = msg.get("period", "")
                 if new_period not in VALID_PERIODS:
                     continue
-                if not manager.set_period(cid, new_period):
-                    continue  # rate-limited
-                snap = _fetch_snapshot(new_period) or {
+                wait = manager.set_period(cid, new_period)
+                if wait > 0:
+                    # Tell the client exactly how long to wait before retrying
+                    await manager.send_to(cid, {
+                        "type": "error",
+                        "code": "rate_limited",
+                        "retry_after": round(wait, 2),
+                        "period": new_period,
+                    })
+                    continue
+                snap = await loop.run_in_executor(None, _fetch_snapshot, new_period) or {
                     "period": new_period, "period_start": None,
                     "clusters": [], "members": [],
                 }

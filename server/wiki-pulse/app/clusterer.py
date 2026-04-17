@@ -33,12 +33,16 @@ log = logging.getLogger(__name__)
 # CPU-bound helpers (run in thread executor)
 # ------------------------------------------------------------------
 
-def _do_hdbscan(embeddings: np.ndarray, min_cluster_size: int) -> np.ndarray:
+def _do_hdbscan(
+    embeddings: np.ndarray,
+    min_cluster_size: int,
+    selection: str = "eom",
+) -> np.ndarray:
     """Fit HDBSCAN and return cluster labels (-1 = noise)."""
     clusterer = hdbscan.HDBSCAN(
         min_cluster_size=min_cluster_size,
         metric="euclidean",
-        cluster_selection_method="eom",
+        cluster_selection_method=selection,
     )
     return clusterer.fit_predict(embeddings)
 
@@ -62,18 +66,61 @@ async def _run_cluster_pipeline(period: str, lookback_hours: int) -> None:
     loop = asyncio.get_running_loop()
 
     # ---- 1. Query DuckDB (offloaded to avoid blocking event loop) --------
+    # Stratified sampling: head slice preserves high-signal popular topics,
+    # tail slice adds diversity so HDBSCAN has mid-frequency clusters to latch
+    # onto. Falls back to pure top-N if STRATIFIED_TAIL_FRACTION is 0.
+    max_articles = config.MAX_CLUSTER_ARTICLES
+    tail_fraction = max(0.0, min(0.9, config.STRATIFIED_TAIL_FRACTION))
+    head_limit = int(max_articles * (1.0 - tail_fraction))
+    tail_limit = max_articles - head_limit
+    tail_pool_size = int(max_articles * config.STRATIFIED_TAIL_POOL_MULT)
+
     def _query_db():
+        if tail_limit <= 0 or tail_fraction <= 0:
+            return state.db.execute(
+                f"""
+                SELECT a.title, a.summary, a.embedding,
+                       COALESCE(SUM(eb.edit_count), 0) AS total_edits
+                FROM articles a
+                INNER JOIN edit_buckets eb ON eb.title = a.title
+                WHERE eb.hour_bucket > now() - INTERVAL '{lookback_hours} HOURS'
+                  AND a.embedding IS NOT NULL
+                GROUP BY a.title, a.summary, a.embedding
+                ORDER BY total_edits DESC
+                LIMIT {max_articles}
+                """
+            ).fetchall()
+        # Stratified: head (top N by edits) UNION tail (random sample from
+        # articles ranked head_limit+1 .. tail_pool_size)
         return state.db.execute(
             f"""
-            SELECT a.title, a.summary, a.embedding,
-                   COALESCE(SUM(eb.edit_count), 0) AS total_edits
-            FROM articles a
-            INNER JOIN edit_buckets eb ON eb.title = a.title
-            WHERE eb.hour_bucket > now() - INTERVAL '{lookback_hours} HOURS'
-              AND a.embedding IS NOT NULL
-            GROUP BY a.title, a.summary, a.embedding
-            ORDER BY total_edits DESC
-            LIMIT {config.MAX_CLUSTER_ARTICLES}
+            WITH joined AS (
+                SELECT a.title, a.summary, a.embedding,
+                       COALESCE(SUM(eb.edit_count), 0) AS total_edits
+                FROM articles a
+                INNER JOIN edit_buckets eb ON eb.title = a.title
+                WHERE eb.hour_bucket > now() - INTERVAL '{lookback_hours} HOURS'
+                  AND a.embedding IS NOT NULL
+                GROUP BY a.title, a.summary, a.embedding
+            ),
+            ranked AS (
+                SELECT *, ROW_NUMBER() OVER (ORDER BY total_edits DESC) AS rnk
+                FROM joined
+            ),
+            head AS (
+                SELECT title, summary, embedding, total_edits
+                FROM ranked WHERE rnk <= {head_limit}
+            ),
+            tail AS (
+                SELECT title, summary, embedding, total_edits
+                FROM ranked
+                WHERE rnk > {head_limit} AND rnk <= {tail_pool_size}
+                ORDER BY random()
+                LIMIT {tail_limit}
+            )
+            SELECT * FROM head
+            UNION ALL
+            SELECT * FROM tail
             """
         ).fetchall()
 
@@ -99,13 +146,18 @@ async def _run_cluster_pipeline(period: str, lookback_hours: int) -> None:
         return
 
     # ---- 3. HDBSCAN (offloaded) -----------------------------------------
+    params = config.HDBSCAN_PARAMS.get(period, {"min_cluster_size": config.MIN_CLUSTER_SIZE, "selection": "eom"})
     labels = await loop.run_in_executor(
-        None, partial(_do_hdbscan, embeddings, config.MIN_CLUSTER_SIZE)
+        None,
+        partial(_do_hdbscan, embeddings, params["min_cluster_size"], params["selection"]),
     )
 
     valid_clusters = set(labels) - {-1}
     if not valid_clusters:
-        log.info("clusterer[%s]: all %d articles are noise, skipping", period, n)
+        log.info(
+            "clusterer[%s]: all %d articles are noise (min_size=%d, selection=%s), skipping",
+            period, n, params["min_cluster_size"], params["selection"],
+        )
         return
 
     # ---- 4. UMAP (offloaded) --------------------------------------------
@@ -194,11 +246,9 @@ async def _run_cluster_pipeline(period: str, lookback_hours: int) -> None:
     try:
         ps = str(period_start)
 
-        # Clear stale data for this period + period_start
-        sb.table("cluster_members").delete().eq("period", period).eq("period_start", ps).execute()
-        sb.table("cluster_snapshots").delete().eq("period", period).eq("period_start", ps).execute()
-
-        # Insert snapshots
+        # Build the new rows FIRST, write them BEFORE deleting obsolete ones.
+        # This closes the tiny window where the frontend could observe an empty
+        # snapshot between the old DELETE and the new INSERT.
         snapshot_rows = [
             {
                 "period": period,
@@ -214,9 +264,9 @@ async def _run_cluster_pipeline(period: str, lookback_hours: int) -> None:
             }
             for cid, meta in cluster_meta.items()
         ]
-        sb.table("cluster_snapshots").upsert(snapshot_rows).execute()
+        new_cluster_ids = [int(cid) for cid in cluster_meta.keys()]
+        new_titles = [titles[i] for i in range(n) if int(labels[i]) != -1]
 
-        # Insert members (batched)
         member_rows = []
         for i in range(n):
             cid = int(labels[i])
@@ -232,8 +282,36 @@ async def _run_cluster_pipeline(period: str, lookback_hours: int) -> None:
                 "edit_count": edit_counts.get(titles[i], 0),
             })
 
+        # ── write new snapshot rows (upsert replaces same (period,period_start,cluster_id)) ──
+        if snapshot_rows:
+            sb.table("cluster_snapshots").upsert(snapshot_rows).execute()
+
+        # ── write new member rows (batched) ──
         for i in range(0, len(member_rows), 500):
             sb.table("cluster_members").upsert(member_rows[i : i + 500]).execute()
+
+        # ── now prune obsolete rows for this (period, period_start) ──
+        # Any snapshot row whose cluster_id is NOT in the freshly-written set
+        # is stale from a previous run and must go. Same for members whose title
+        # is no longer in any cluster.
+        try:
+            if new_cluster_ids:
+                sb.table("cluster_snapshots").delete().eq("period", period).eq("period_start", ps).not_.in_("cluster_id", new_cluster_ids).execute()
+            else:
+                sb.table("cluster_snapshots").delete().eq("period", period).eq("period_start", ps).execute()
+
+            if new_titles:
+                # Chunk the NOT IN filter — Supabase URL length is bounded
+                chunk = 200
+                existing_titles_res = sb.table("cluster_members").select("title").eq("period", period).eq("period_start", ps).execute()
+                existing = {r["title"] for r in (existing_titles_res.data or [])}
+                obsolete = list(existing - set(new_titles))
+                for j in range(0, len(obsolete), chunk):
+                    sb.table("cluster_members").delete().eq("period", period).eq("period_start", ps).in_("title", obsolete[j : j + chunk]).execute()
+            else:
+                sb.table("cluster_members").delete().eq("period", period).eq("period_start", ps).execute()
+        except Exception:
+            log.exception("clusterer[%s]: obsolete-row prune failed (non-fatal)", period)
 
     except Exception:
         log.exception("clusterer[%s]: supabase write failed", period)
