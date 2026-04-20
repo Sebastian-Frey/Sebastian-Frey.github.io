@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Changed
+- **Wiki Pulse — VPS stability bundle** — Addresses recurring ~6-8 h OOM/hang pattern on the 2 GB VPS that left uvicorn's event loop alive-but-unresponsive ("Up but no HTTP"). Three changes in `server/docker-compose.yml` + `.env.example`:
+  1. `wikipulse` service gets `mem_limit: 1100m` + `memswap_limit: 1100m` so it can't drag the whole VPS into swap-thrashing and starve chess-backend/caddy.
+  2. `healthcheck` on the wikipulse root endpoint every 60 s with a 90 s `start_period` to accommodate sentence-transformers model load on first boot.
+  3. New `autoheal` sidecar (`willfarrell/autoheal:1.2.0`) watches containers labeled `autoheal=true`; auto-restarts wikipulse within 30 s when Docker marks it unhealthy. Closes the observability gap where `docker ps` reported "running" while uvicorn was hung.
 - **Wiki Pulse — Recursive density split** — After the primary HDBSCAN run, each cluster whose size is at least `SPLIT_TRIGGER_MULT * min_cluster_size` (default 2x) is re-clustered using its own internal density: fresh HDBSCAN with leaf selection and `min_cluster_size = max(SPLIT_MIN_SUB_SIZE, parent_size // 4)`. Any sub-regions discovered are promoted to new top-level clusters; intra-cluster noise stays with the parent; primary noise (-1) is never touched. Fixes the "megacluster swallows unrelated topics" symptom (e.g. the Hockey-tournament + Chrysobothris blob) by surfacing sub-topics that EOM/leaf suppressed at full-population scale. Tunable via `WIKIPULSE_SPLIT_ENABLED`, `WIKIPULSE_SPLIT_TRIGGER_MULT`, `WIKIPULSE_SPLIT_MIN_SUB_SIZE`. Splits are logged at INFO so you can see the effect per run.
 
 ### Changed

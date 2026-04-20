@@ -15,7 +15,35 @@ services:
       - .env
     volumes:
       - wikipulse_data:/var/lib/wikipulse
+    # Cap memory so one service can't starve the whole 2 GB VPS (was
+    # swap-thrashing the host and hanging uvicorn's event loop every ~6-8 h).
+    mem_limit: 1100m
+    memswap_limit: 1100m
+    # Docker polls the HTTP root endpoint; autoheal (below) restarts the
+    # container when this reports unhealthy. Generous start_period because
+    # sentence-transformers model load takes ~30 s on first boot.
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request, sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/', timeout=5).status == 200 else 1)"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
     restart: unless-stopped
+    labels:
+      autoheal: "true"
+
+  # Watches any container labeled `autoheal=true` and restarts it when Docker
+  # reports an unhealthy status. This closes the observability gap where a
+  # hung uvicorn event loop looks "running" to Docker but serves no HTTP.
+  autoheal:
+    image: willfarrell/autoheal:1.2.0
+    container_name: autoheal
+    restart: always
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=autoheal
+      - AUTOHEAL_INTERVAL=30
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
   caddy:
     image: caddy:2
