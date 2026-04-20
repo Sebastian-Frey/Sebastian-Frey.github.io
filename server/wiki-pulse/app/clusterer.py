@@ -47,6 +47,70 @@ def _do_hdbscan(
     return clusterer.fit_predict(embeddings)
 
 
+def _split_dense_clusters(
+    embeddings: np.ndarray,
+    labels: np.ndarray,
+    parent_min_size: int,
+    trigger_mult: float = 2.0,
+    min_sub_size: int = 3,
+) -> np.ndarray:
+    """Recursively split each HDBSCAN cluster using its own internal density.
+
+    For every cluster whose size is at least ``trigger_mult * parent_min_size``,
+    re-run HDBSCAN (leaf selection, reduced ``min_cluster_size``) on just that
+    cluster's embeddings. Sub-regions found this way are promoted to new
+    top-level clusters. Intra-cluster noise (points that can't be reassigned
+    to any sub-cluster) stays with the parent id.
+
+    Does NOT touch points already labeled -1 (primary noise).
+
+    Returns a new labels array; does not mutate ``labels``.
+    """
+    out = labels.copy()
+    next_id = int(out.max()) + 1 if out.size and out.max() >= 0 else 0
+    splits_made = 0
+
+    for cid in sorted({int(x) for x in labels if x != -1}):
+        member_mask = labels == cid
+        member_idx = np.where(member_mask)[0]
+        size = len(member_idx)
+        if size < trigger_mult * parent_min_size:
+            continue
+
+        sub_min_size = max(min_sub_size, size // 4)
+        if sub_min_size >= size:
+            continue
+
+        sub_labels = _do_hdbscan(embeddings[member_idx], sub_min_size, selection="leaf")
+        sub_valid = {int(x) for x in sub_labels if x != -1}
+        if len(sub_valid) < 2:
+            # no meaningful sub-structure — leave parent intact
+            continue
+
+        # Biggest sub-region keeps the parent id; others get fresh ids.
+        sub_sizes = {s: int((sub_labels == s).sum()) for s in sub_valid}
+        ordered = sorted(sub_valid, key=lambda s: -sub_sizes[s])
+        mapping: dict[int, int] = {ordered[0]: cid}
+        for s in ordered[1:]:
+            mapping[s] = next_id
+            next_id += 1
+
+        for i, sublab in enumerate(sub_labels):
+            if sublab == -1:
+                # intra-cluster noise stays as parent cid (already correct)
+                continue
+            out[member_idx[i]] = mapping[int(sublab)]
+
+        splits_made += 1
+
+    if splits_made:
+        log.info(
+            "split: %d parent clusters fragmented into sub-clusters (new ids up to %d)",
+            splits_made, next_id - 1,
+        )
+    return out
+
+
 def _do_umap(umap_st: UmapState, embeddings: np.ndarray) -> np.ndarray:
     """Fit or transform UMAP, returning (N, 2) coordinates."""
     if umap_st._reducer is None:
@@ -159,6 +223,30 @@ async def _run_cluster_pipeline(period: str, lookback_hours: int) -> None:
             period, n, params["min_cluster_size"], params["selection"],
         )
         return
+
+    # ---- 3b. Recursive density split (offloaded) ------------------------
+    # Break up megaclusters that contain detectable sub-structure. No-op for
+    # clusters too small to split or clusters with no internal density.
+    if config.SPLIT_ENABLED:
+        n_before = len(valid_clusters)
+        labels = await loop.run_in_executor(
+            None,
+            partial(
+                _split_dense_clusters,
+                embeddings,
+                labels,
+                params["min_cluster_size"],
+                config.SPLIT_TRIGGER_MULT,
+                config.SPLIT_MIN_SUB_SIZE,
+            ),
+        )
+        valid_clusters = set(labels) - {-1}
+        n_after = len(valid_clusters)
+        if n_after != n_before:
+            log.info(
+                "clusterer[%s]: density split %d -> %d clusters",
+                period, n_before, n_after,
+            )
 
     # ---- 4. UMAP (offloaded) --------------------------------------------
     umap_path = f"{config.DATA_DIR}/umap_{period}.pkl"

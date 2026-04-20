@@ -38,5 +38,15 @@ HDBSCAN_PARAMS: dict[str, dict] = {
 STRATIFIED_TAIL_FRACTION = float(os.environ.get("WIKIPULSE_STRATIFIED_TAIL_FRACTION", "0.25"))
 STRATIFIED_TAIL_POOL_MULT = float(os.environ.get("WIKIPULSE_STRATIFIED_TAIL_POOL_MULT", "3.0"))
 
+# Recursive density split: after the primary HDBSCAN run, re-cluster each
+# cluster that is big enough to plausibly contain sub-topics, using the
+# cluster's own internal density. Sub-regions found this way get promoted
+# to top-level clusters; intra-cluster noise stays with the parent.
+# Fixes the "one megacluster swallows unrelated topics" failure mode
+# (e.g. hockey + beetles in the same purple blob).
+SPLIT_ENABLED = os.environ.get("WIKIPULSE_SPLIT_ENABLED", "1") not in ("0", "false", "False", "")
+SPLIT_TRIGGER_MULT = float(os.environ.get("WIKIPULSE_SPLIT_TRIGGER_MULT", "2.0"))
+SPLIT_MIN_SUB_SIZE = int(os.environ.get("WIKIPULSE_SPLIT_MIN_SUB_SIZE", "3"))
+
 WIKI_SSE_URL = "https://stream.wikimedia.org/v2/stream/recentchange"
 WIKI_SUMMARY_URL = "https://en.wikipedia.org/api/rest_v1/page/summary/{title}"

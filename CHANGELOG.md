@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Changed
+- **Wiki Pulse — Recursive density split** — After the primary HDBSCAN run, each cluster whose size is at least `SPLIT_TRIGGER_MULT * min_cluster_size` (default 2x) is re-clustered using its own internal density: fresh HDBSCAN with leaf selection and `min_cluster_size = max(SPLIT_MIN_SUB_SIZE, parent_size // 4)`. Any sub-regions discovered are promoted to new top-level clusters; intra-cluster noise stays with the parent; primary noise (-1) is never touched. Fixes the "megacluster swallows unrelated topics" symptom (e.g. the Hockey-tournament + Chrysobothris blob) by surfacing sub-topics that EOM/leaf suppressed at full-population scale. Tunable via `WIKIPULSE_SPLIT_ENABLED`, `WIKIPULSE_SPLIT_TRIGGER_MULT`, `WIKIPULSE_SPLIT_MIN_SUB_SIZE`. Splits are logged at INFO so you can see the effect per run.
+
+### Changed
 - **Wiki Pulse — Period-switch responsiveness & cluster diversity** — Seven related fixes addressing (a) the Day/Week/Month buttons feeling laggy and (b) weekly sometimes producing only 2 clusters:
   1. *Optimistic UI* (`wiki-pulse.astro`): period click now immediately clears the scatter, treemap, heatmap, cluster cards, and legend, and swaps the overlay text to `Loading {period}…`. Active button gets `animate-pulse`. Stale snapshots for a period the user already switched away from are ignored.
   2. *Frontend rate-limit handling* (`wiki-pulse.astro`): new `rate_limited` WebSocket error handler parses `retry_after` and schedules a resubscribe via `setTimeout`. Tracks `pendingPeriod` so the latest-clicked period always wins.
