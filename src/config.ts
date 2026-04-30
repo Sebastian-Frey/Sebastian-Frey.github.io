@@ -5,8 +5,8 @@ export const siteConfig = {
   accentColor: "#1d4ed8",
   social: {
     emailEncoded: "c2MuZnJleUBhb2wuZGU=",
-    linkedin: "https://www.linkedin.com/in/sebastian-frey",
-    github: "https://www.github.com/Sebastian--Frey",
+    linkedin: "https://www.linkedin.com/in/sebastian--frey",
+    github: "https://www.github.com/Sebastian-Frey",
   },
   aboutMe:
     "I work at the intersection of machine learning, LLMs, and real-world business problems, with a strong focus on applied modeling, forecasting, and production-ready systems. My background combines deep technical work with business-critical use cases. As a Data Scientist, I design and implement advanced ML models end to end — from raw, large-scale data pipelines to evaluation, validation, and deployment — while keeping a clear view on how models are actually used for decision-making.",

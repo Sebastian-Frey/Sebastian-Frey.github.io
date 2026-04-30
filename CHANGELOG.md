@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- **Social link slugs in `src/config.ts`** — LinkedIn had `sebastian-frey` (one dash) and GitHub had `Sebastian--Frey` (two dashes); both were inverted. Corrected to LinkedIn `sebastian--frey` (two dashes) and GitHub `Sebastian-Frey` (one dash). Affects the icon links in `Hero.astro` and `Footer.astro`.
+
 ### Changed
 - **Wiki Pulse — VPS stability bundle** — Addresses recurring ~6-8 h OOM/hang pattern on the 2 GB VPS that left uvicorn's event loop alive-but-unresponsive ("Up but no HTTP"). Three changes in `server/docker-compose.yml` + `.env.example`:
   1. `wikipulse` service gets `mem_limit: 1100m` + `memswap_limit: 1100m` so it can't drag the whole VPS into swap-thrashing and starve chess-backend/caddy.
