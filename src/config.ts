@@ -1,6 +1,6 @@
 export const siteConfig = {
   name: "Sebastian Frey",
-  title: "Applied ML Engineer / Data Scientist",
+  title: "Software Engineer | Applied ML Engineer | Data Scientist",
   description: "Portfolio website of Sebastian Frey",
   accentColor: "#1d4ed8",
   social: {
