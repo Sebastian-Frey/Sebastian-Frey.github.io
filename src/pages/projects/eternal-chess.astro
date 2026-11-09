@@ -1,7 +1,5 @@
 ---
 import MainLayout from "../../layouts/MainLayout.astro";
-import EmailLink from "../../components/EmailLink.astro";
-const wsUrl = import.meta.env.PUBLIC_WS_URL || "ws://localhost:8000/ws";
 ---
 
 <MainLayout title="Eternal Chess">
@@ -20,8 +18,8 @@ const wsUrl = import.meta.env.PUBLIC_WS_URL || "ws://localhost:8000/ws";
         <a href="https://github.com/Sebastian-Frey" target="_blank" class="text-slate-500 hover:text-blue-400 transition-colors">
           <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.042-1.416-4.042-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
         </a>
-        <div id="status-badge" class="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-full text-slate-500 text-[9px] font-bold tracking-wider transition-all duration-300">
-          ● SERVER: CONNECTING
+        <div class="px-3 py-1.5 bg-blue-500/10 border border-blue-500/30 rounded-full text-blue-400 text-[9px] font-bold tracking-wider">
+          ● LOCAL MODE
         </div>
       </div>
     </div>
@@ -36,13 +34,16 @@ const wsUrl = import.meta.env.PUBLIC_WS_URL || "ws://localhost:8000/ws";
 
     <div class="relative z-10 max-w-6xl mx-auto px-6 pb-16 pt-32 w-full">
       <div class="text-blue-400 font-mono text-[10px] font-bold mb-5 uppercase tracking-[0.5em]">
-        Live Multiplayer · WebSocket Architecture
+        Multiplayer Chess · WebSocket Architecture
       </div>
       <h1 class="text-6xl md:text-[9rem] font-black tracking-tighter leading-none uppercase text-white mb-6 glitch-title">
         ETERNAL<span class="text-blue-500">CHESS</span><span class="text-slate-600">.</span>
       </h1>
       <p class="text-slate-400 font-mono text-sm max-w-xl leading-relaxed">
-        A real-time multiplayer chess game powered by <strong class="text-white">WebSockets</strong>. Server validates moves, broadcasts state to all connected players instantly. Persistent. Live. No page reloads.
+        A real-time multiplayer chess game powered by <strong class="text-white">WebSockets</strong>. The server validated moves and broadcast state to all connected players instantly. Persistent. Live. No page reloads.
+      </p>
+      <p class="text-slate-500 font-mono text-xs max-w-xl leading-relaxed mt-4">
+        The multiplayer server has been retired. The board below runs locally in your browser.
       </p>
     </div>
   </section>
@@ -57,13 +58,15 @@ const wsUrl = import.meta.env.PUBLIC_WS_URL || "ws://localhost:8000/ws";
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 font-mono text-sm text-slate-400 leading-relaxed">
           <div>
-            <p class="mb-3">This is a <strong class="text-white">shared, persistent chess game</strong>. There is one board, and everyone in the world plays on it together. The game continues even after you close your browser.</p>
-            <p>Click a piece to select it, then click a destination square to move. You can also type moves in standard notation (e.g. e4, Nf3, O-O) in the input box below the board.</p>
+            <h3 class="text-[10px] text-blue-400 uppercase tracking-widest font-bold mb-3">Local sandbox</h3>
+            <p class="mb-3">The board below runs <strong class="text-white">entirely in your browser</strong>. You play both sides on one device, and chess.js checks every move.</p>
+            <p class="mb-3">Click a piece to select it, then click a destination square to move. You can also type moves in standard notation (e.g. e4, Nf3, O-O) in the input box below the board.</p>
+            <p class="text-slate-500 text-xs">Your game is saved in this browser, so it survives a reload.</p>
           </div>
           <div>
-            <p class="mb-3">When <strong class="text-white">1-2 people</strong> are online, anyone can make a move at any time.</p>
-            <p class="mb-3">When <strong class="text-white">3 or more people</strong> are online, a queue system activates. Each person makes <strong class="text-white">one move</strong>, then goes to the back of the line. The page will notify you when it's your turn.</p>
-            <p class="text-slate-500 text-xs">Your queue position is shown above the board.</p>
+            <h3 class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-3">How the multiplayer version worked</h3>
+            <p class="mb-3">There was one <strong class="text-white">shared, persistent board</strong>, and everyone in the world played on it together. The game continued after you closed your browser.</p>
+            <p class="mb-3">With <strong class="text-white">1-2 people</strong> online, anyone could move at any time. With <strong class="text-white">3 or more</strong>, a round-robin queue kicked in: each person made one move, then went to the back of the line.</p>
           </div>
         </div>
       </div>
@@ -78,16 +81,16 @@ const wsUrl = import.meta.env.PUBLIC_WS_URL || "ws://localhost:8000/ws";
         <span class="text-2xl font-black text-white" id="stat-moves">—</span>
       </div>
       <div class="px-6">
-        <span class="block text-[10px] text-slate-500 uppercase tracking-[0.3em] mb-2">Latency</span>
-        <span class="text-2xl font-black text-white" id="stat-latency">—<span class="text-blue-500">ms</span></span>
+        <span class="block text-[10px] text-slate-500 uppercase tracking-[0.3em] mb-2">Mode</span>
+        <span class="text-2xl font-black text-white">Local</span>
       </div>
       <div class="px-6">
-        <span class="block text-[10px] text-slate-500 uppercase tracking-[0.3em] mb-2">Protocol</span>
+        <span class="block text-[10px] text-slate-500 uppercase tracking-[0.3em] mb-2">Validation</span>
+        <span class="text-2xl font-black text-white">chess<span class="text-blue-500">.js</span></span>
+      </div>
+      <div class="px-6">
+        <span class="block text-[10px] text-slate-500 uppercase tracking-[0.3em] mb-2">Original Stack</span>
         <span class="text-2xl font-black text-blue-400">WebSocket</span>
-      </div>
-      <div class="px-6">
-        <span class="block text-[10px] text-slate-500 uppercase tracking-[0.3em] mb-2">Connected</span>
-        <span class="text-2xl font-black text-white" id="stat-viewers">0 <span class="text-blue-500">viewers</span></span>
       </div>
     </div>
   </section>
@@ -103,24 +106,19 @@ const wsUrl = import.meta.env.PUBLIC_WS_URL || "ws://localhost:8000/ws";
             <!-- Board header -->
             <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
               <div class="flex items-center gap-3">
-                <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <span class="font-mono text-[10px] text-slate-400 uppercase tracking-widest">Live Board</span>
+                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                <span class="font-mono text-[10px] text-slate-400 uppercase tracking-widest">Local Board</span>
               </div>
               <span class="font-mono text-[10px] text-slate-600" id="turn-indicator">WHITE TO MOVE</span>
             </div>
 
-            <!-- Server down notice -->
-            <div id="server-down-bar" class="px-6 py-4 border-b border-red-500/30 bg-red-500/5 hidden">
-              <div class="flex items-center justify-center gap-3 font-mono text-[11px]">
-                <span class="text-red-400 uppercase tracking-widest font-bold">Server Offline</span>
-                <span class="text-slate-500">—</span>
-                <span class="text-slate-400">The game server is currently down. Reach out at <EmailLink showText class="text-blue-400 hover:text-blue-300 underline underline-offset-2 normal-case tracking-normal inline" /></span>
+            <!-- Local mode notice -->
+            <div class="px-6 py-3 border-b border-blue-500/20 bg-blue-500/5">
+              <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 font-mono text-[11px] text-center">
+                <span class="text-blue-400 uppercase tracking-widest font-bold">Offline Sandbox</span>
+                <span class="text-slate-600 hidden sm:inline">—</span>
+                <span class="text-slate-400">Multiplayer server retired. You play both sides on this device.</span>
               </div>
-            </div>
-
-            <!-- Queue bar -->
-            <div id="queue-bar" class="px-6 py-3 border-b border-slate-800 font-mono text-[11px] uppercase tracking-widest text-center hidden">
-              <span id="queue-text"></span>
             </div>
 
             <!-- Chess board -->
@@ -140,10 +138,9 @@ const wsUrl = import.meta.env.PUBLIC_WS_URL || "ws://localhost:8000/ws";
               <div class="text-center">
                 <div class="font-mono text-[10px] text-amber-500/70 uppercase tracking-[0.4em] mb-2">Game Over</div>
                 <div id="game-over-result" class="font-mono text-2xl font-black text-amber-400 mb-4"></div>
-                <button id="vote-restart-btn" class="px-6 py-2.5 bg-blue-600 text-white font-mono text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-500 transition-all hover:shadow-lg hover:shadow-blue-500/20">
-                  Vote to Restart
+                <button id="new-game-btn" class="px-6 py-2.5 bg-blue-600 text-white font-mono text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-500 transition-all hover:shadow-lg hover:shadow-blue-500/20">
+                  New Game
                 </button>
-                <div id="vote-status" class="font-mono text-[10px] text-slate-500 mt-3 hidden"></div>
               </div>
             </div>
 
@@ -160,34 +157,39 @@ const wsUrl = import.meta.env.PUBLIC_WS_URL || "ws://localhost:8000/ws";
                   id="submit-move"
                   class="px-6 py-3 bg-blue-600 text-white font-mono text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-500 transition-all hover:shadow-lg hover:shadow-blue-500/20"
                 >
-                  Dispatch
+                  Move
                 </button>
               </div>
-              <div class="flex items-center justify-between mt-3">
+              <div class="flex items-center justify-between gap-4 mt-3 min-h-[1.25rem]">
                 <div id="move-feedback" class="font-mono text-xs hidden"></div>
-                <button id="vote-restart-inline" class="font-mono text-[9px] text-slate-600 hover:text-amber-400 uppercase tracking-wider transition-colors hidden">
-                  Vote to Restart
-                </button>
+                <div class="flex items-center gap-4 ml-auto">
+                  <button id="undo-btn" class="font-mono text-[9px] text-slate-500 hover:text-blue-400 uppercase tracking-wider transition-colors">
+                    Undo
+                  </button>
+                  <button id="reset-btn" class="font-mono text-[9px] text-slate-500 hover:text-amber-400 uppercase tracking-wider transition-colors">
+                    New Game
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- ── GITOPS DASHBOARD PANEL ── -->
+        <!-- ── GAME STATE PANEL ── -->
         <div class="lg:col-span-5 space-y-6">
 
           <!-- Status Panel -->
           <div class="bg-slate-900 rounded-2xl border border-slate-800 p-6">
             <div class="flex items-center gap-3 mb-5">
               <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="text-blue-400"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-              <span class="font-mono text-[10px] text-slate-400 uppercase tracking-widest font-bold">Live Server Telemetry</span>
+              <span class="font-mono text-[10px] text-slate-400 uppercase tracking-widest font-bold">Game State</span>
             </div>
             <div class="space-y-4">
               <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
-                <span class="font-mono text-[10px] text-slate-500 uppercase">Server Status</span>
-                <span id="pipeline-status" class="font-mono text-[10px] font-bold text-slate-500 flex items-center gap-2">
-                  <span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
-                  CONNECTING
+                <span class="font-mono text-[10px] text-slate-500 uppercase">Mode</span>
+                <span class="font-mono text-[10px] font-bold text-blue-400 flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                  LOCAL · IN BROWSER
                 </span>
               </div>
               <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
@@ -209,7 +211,7 @@ const wsUrl = import.meta.env.PUBLIC_WS_URL || "ws://localhost:8000/ws";
           <div class="bg-slate-900 rounded-2xl border border-slate-800 p-6">
             <div class="flex items-center gap-3 mb-5">
               <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="text-blue-400"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
-              <span class="font-mono text-[10px] text-slate-400 uppercase tracking-widest font-bold">Commit History</span>
+              <span class="font-mono text-[10px] text-slate-400 uppercase tracking-widest font-bold">Move History</span>
             </div>
             <div id="commit-log" class="space-y-2 max-h-[320px] overflow-y-auto scrollbar-thin">
               <!-- Populated by JS -->
@@ -241,7 +243,7 @@ const wsUrl = import.meta.env.PUBLIC_WS_URL || "ws://localhost:8000/ws";
           <div class="text-blue-400 font-mono text-[10px] font-bold mb-3 uppercase tracking-[0.4em]">System Architecture</div>
           <h2 class="text-5xl font-black tracking-tighter uppercase text-white">The WebSocket Pipeline</h2>
           <p class="text-slate-400 font-mono text-sm mt-4 max-w-2xl mx-auto leading-relaxed">
-            Every chess move flows through a persistent WebSocket connection. The server validates, updates state, and broadcasts to all connected clients in real time.
+            In the multiplayer version, every chess move flowed through a persistent WebSocket connection. The server validated it, updated state, and broadcast it to all connected clients in real time.
           </p>
         </div>
 
@@ -548,15 +550,6 @@ socket.send(JSON.stringify(&#123;
       visibility: hidden;
     }
 
-    /* Queue bar pulse animation */
-    @keyframes queue-pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.7; }
-    }
-    .queue-your-turn {
-      animation: queue-pulse 2s ease-in-out infinite;
-    }
-
     /* Scrollbar for dashboard panels */
     .scrollbar-thin::-webkit-scrollbar { width: 4px; }
     .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
@@ -566,402 +559,102 @@ socket.send(JSON.stringify(&#123;
   <!-- ── CHESS.JS CDN ── -->
   <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 
-  <!-- ── Inject build-time WS URL ── -->
-  <script define:vars={{ wsUrl }}>
-    window.__EC_WS_URL = wsUrl;
-  </script>
-
-  <!-- ── GAME ENGINE (WebSocket + Queue + Animations) ── -->
+  <!-- ── GAME ENGINE (local sandbox: no server, no network) ── -->
   <script is:inline>
-    // ── CONFIG ──
-    var WS_URL = window.__EC_WS_URL || 'ws://localhost:8000/ws';
+  (function () {
+    "use strict";
+
+    var boardEl = document.getElementById('chess-board');
+    if (!boardEl) return;
+
+    // If the chess.js CDN is unreachable, show a message instead of throwing.
+    if (typeof Chess === 'undefined') {
+      boardEl.innerHTML = '<div class="col-span-8 aspect-square flex items-center justify-center p-8 text-center font-mono text-xs text-slate-500">The chess engine could not be loaded. Please reload the page.</div>';
+      return;
+    }
+
+    var STORAGE_KEY = 'ec_local_moves';
 
     // ── PIECE UNICODE MAP ──
     var PIECE_GLYPHS = {
-      'K': '\u2654', 'Q': '\u2655', 'R': '\u2656', 'B': '\u2657', 'N': '\u2658', 'P': '\u2659',
-      'k': '\u265A', 'q': '\u265B', 'r': '\u265C', 'b': '\u265D', 'n': '\u265E', 'p': '\u265F'
+      'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙',
+      'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
     };
 
     // ── STATE ──
     var chess = new Chess();
     var selectedSquare = null;
-    var moveHistory = [];
-    var socket = null;
-    var reconnectAttempts = 0;
-    var lastMoveSentAt = 0;
     var lastMoveFrom = null;
     var lastMoveTo = null;
     var animating = false;
-
-    // Queue state
-    var myId = null;
-    var queueEnabled = false;
-    var queuePosition = -1;
-    var isMyTurn = true;
+    var feedbackTimer = null;
 
     // ── DOM REFS ──
-    var boardEl     = document.getElementById('chess-board');
-    var moveInput   = document.getElementById('move-input');
-    var submitBtn   = document.getElementById('submit-move');
-    var feedback    = document.getElementById('move-feedback');
-    var turnEl      = document.getElementById('turn-indicator');
-    var fenEl       = document.getElementById('fen-display');
-    var moveNumEl   = document.getElementById('move-number');
-    var resultEl    = document.getElementById('game-result');
-    var pgnEl       = document.getElementById('pgn-display');
-    var commitLog   = document.getElementById('commit-log');
-    var pipelineEl  = document.getElementById('pipeline-status');
-    var statusBadge = document.getElementById('status-badge');
-    var statMoves   = document.getElementById('stat-moves');
-    var statLatency = document.getElementById('stat-latency');
-    var statViewers = document.getElementById('stat-viewers');
-    var queueBar    = document.getElementById('queue-bar');
-    var queueText   = document.getElementById('queue-text');
-    var serverDownBar = document.getElementById('server-down-bar');
-    var checkBanner = document.getElementById('check-banner');
+    var moveInput       = document.getElementById('move-input');
+    var submitBtn       = document.getElementById('submit-move');
+    var feedback        = document.getElementById('move-feedback');
+    var turnEl          = document.getElementById('turn-indicator');
+    var fenEl           = document.getElementById('fen-display');
+    var moveNumEl       = document.getElementById('move-number');
+    var resultEl        = document.getElementById('game-result');
+    var pgnEl           = document.getElementById('pgn-display');
+    var commitLog       = document.getElementById('commit-log');
+    var statMoves       = document.getElementById('stat-moves');
+    var checkBanner     = document.getElementById('check-banner');
     var gameOverOverlay = document.getElementById('game-over-overlay');
-    var gameOverResult = document.getElementById('game-over-result');
-    var voteRestartBtn = document.getElementById('vote-restart-btn');
-    var voteRestartInline = document.getElementById('vote-restart-inline');
-    var voteStatus  = document.getElementById('vote-status');
+    var gameOverResult  = document.getElementById('game-over-result');
+    var newGameBtn      = document.getElementById('new-game-btn');
+    var undoBtn         = document.getElementById('undo-btn');
+    var resetBtn        = document.getElementById('reset-btn');
 
-    // ── SOUND SYSTEM ──
+    // ── SOUND ──
     var sounds = {};
-    function preloadSounds() {
-      ['move', 'capture', 'check', 'notify'].forEach(function(name) {
+    ['move', 'capture', 'check'].forEach(function (name) {
+      try {
         var audio = new Audio('/sounds/' + name + '.mp3');
         audio.preload = 'auto';
         audio.volume = 0.5;
         sounds[name] = audio;
-      });
-    }
+      } catch (e) {}
+    });
     function playSound(name) {
       var s = sounds[name];
-      if (s) {
+      if (!s) return;
+      try {
         s.currentTime = 0;
-        s.play().catch(function() {});
-      }
-    }
-    preloadSounds();
-
-    // Request notification permission
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
+        var p = s.play();
+        if (p && p.catch) p.catch(function () {});
+      } catch (e) {}
     }
 
-    // ── WEBSOCKET CONNECTION ──
-    function connectWebSocket() {
-      socket = new WebSocket(WS_URL);
-
-      socket.onopen = function() {
-        reconnectAttempts = 0;
-        setServerStatus('online');
-        showFeedback('Connected to game server', 'emerald');
-      };
-
-      socket.onmessage = function(event) {
-        var data;
-        try { data = JSON.parse(event.data); } catch(e) { return; }
-        handleServerMessage(data);
-      };
-
-      socket.onclose = function() {
-        setServerStatus('offline');
-        var delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
-        reconnectAttempts++;
-        showFeedback('Disconnected. Reconnecting in ' + Math.round(delay/1000) + 's...', 'amber');
-        setTimeout(connectWebSocket, delay);
-      };
-
-      socket.onerror = function() {
-        setServerStatus('offline');
-      };
+    // ── PERSISTENCE (per browser) ──
+    function saveGame() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(chess.history())); } catch (e) {}
+    }
+    function loadGame() {
+      var saved = null;
+      try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (e) { saved = null; }
+      if (!Array.isArray(saved)) return;
+      for (var i = 0; i < saved.length; i++) {
+        if (!chess.move(saved[i])) { chess.reset(); break; }
+      }
+      syncLastMove();
+    }
+    function syncLastMove() {
+      var hist = chess.history({ verbose: true });
+      var last = hist[hist.length - 1];
+      lastMoveFrom = last ? last.from : null;
+      lastMoveTo = last ? last.to : null;
     }
 
-    // ── HANDLE SERVER MESSAGES ──
-    function handleServerMessage(data) {
-      var type = data.type;
-
-      if (type === 'init') {
-        if (data.fen) {
-          chess = new Chess(data.fen);
-        }
-        if (data.moves && Array.isArray(data.moves)) {
-          moveHistory = data.moves;
-        }
-        if (data.move_count != null) {
-          statMoves.textContent = data.move_count.toLocaleString();
-        }
-        if (data.your_id) {
-          myId = data.your_id;
-        }
-        lastMoveFrom = null;
-        lastMoveTo = null;
-        selectedSquare = null;
-        // Clear game-over and check states
-        gameOverOverlay.classList.add('hidden');
-        checkBanner.classList.add('hidden');
-        voteStatus.classList.add('hidden');
-        voteRestartInline.classList.add('hidden');
-        renderBoard();
-        updateUI();
-        renderMoveHistory(moveHistory);
-        return;
-      }
-
-      if (type === 'move') {
-        var fromSq = data.from || null;
-        var toSq = data.to || null;
-
-        if (fromSq && toSq && !animating) {
-          // Animate the move
-          animateMove(fromSq, toSq, data, function() {
-            applyMoveData(data, fromSq, toSq);
-          });
-        } else {
-          applyMoveData(data, fromSq, toSq);
-        }
-        return;
-      }
-
-      if (type === 'error') {
-        showFeedback('Server: ' + (data.message || 'Invalid move'), 'red');
-        if (data.fen) {
-          chess = new Chess(data.fen);
-          selectedSquare = null;
-          renderBoard();
-          updateUI();
-        }
-        return;
-      }
-
-      if (type === 'viewers') {
-        if (data.count != null) {
-          statViewers.innerHTML = data.count + ' <span class="text-blue-500">viewers</span>';
-        }
-        return;
-      }
-
-      if (type === 'queue') {
-        var wasMyTurn = isMyTurn;
-        queueEnabled = data.enabled;
-        if (data.enabled) {
-          queuePosition = data.position;
-          isMyTurn = data.is_your_turn;
-        } else {
-          queuePosition = -1;
-          isMyTurn = true;
-        }
-        updateQueueUI();
-
-        // Notify when it becomes your turn
-        if (data.is_your_turn && !wasMyTurn && queueEnabled) {
-          playSound('notify');
-          if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('Eternal Chess', { body: "It's your turn to move!" });
-          }
-        }
-        return;
-      }
-
-      if (type === 'game_over') {
-        var result = data.result || 'Game Over';
-        resultEl.textContent = result;
-        resultEl.className = 'font-mono text-[10px] font-bold text-amber-400';
-        playSound('check');
-        checkBanner.classList.add('hidden');
-
-        // Show game over overlay
-        gameOverResult.textContent = result;
-        gameOverOverlay.classList.remove('hidden');
-        voteRestartInline.classList.add('hidden');
-
-        // Browser notification
-        if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('Eternal Chess', { body: 'Game Over: ' + result });
-        }
-        return;
-      }
-
-      if (type === 'restart_vote') {
-        voteStatus.textContent = data.votes + ' / ' + data.needed + ' votes to restart';
-        voteStatus.classList.remove('hidden');
-        return;
-      }
-
-      if (type === 'restart_countdown') {
-        var secs = data.seconds || 30;
-        voteStatus.classList.remove('hidden');
-        var countdownInterval = setInterval(function() {
-          secs--;
-          voteStatus.textContent = 'Auto-restart in ' + secs + 's if no opposition';
-          if (secs <= 0) clearInterval(countdownInterval);
-        }, 1000);
-        voteStatus.textContent = 'Auto-restart in ' + secs + 's if no opposition';
-        return;
-      }
-    }
-
-    // ── APPLY MOVE DATA (after animation or immediately) ──
-    function applyMoveData(data, fromSq, toSq) {
-      if (data.fen) {
-        chess = new Chess(data.fen);
-      } else if (data.move) {
-        chess.move(data.move);
-      }
-
-      // Track latency if this was our own move
-      if (lastMoveSentAt > 0) {
-        var latency = Date.now() - lastMoveSentAt;
-        statLatency.innerHTML = latency + '<span class="text-blue-500">ms</span>';
-        lastMoveSentAt = 0;
-      }
-
-      if (data.move) {
-        moveHistory.push(data.move);
-        addMoveEntry(data.move, moveHistory.length);
-      }
-      if (data.move_count != null) {
-        statMoves.textContent = data.move_count.toLocaleString();
-      }
-
-      // Play sound + check banner
-      if (data.is_check) {
-        playSound('check');
-        checkBanner.classList.remove('hidden');
-      } else {
-        checkBanner.classList.add('hidden');
-        if (data.is_capture) {
-          playSound('capture');
-        } else {
-          playSound('move');
-        }
-      }
-
-      // Show inline restart vote button during active games
-      if (!chess.game_over()) {
-        voteRestartInline.classList.remove('hidden');
-      }
-
-      lastMoveFrom = fromSq;
-      lastMoveTo = toSq;
-      selectedSquare = null;
-      renderBoard();
-      updateUI();
-    }
-
-    // ── MOVE ANIMATION ──
-    function animateMove(fromSq, toSq, data, callback) {
-      var fromEl = boardEl.querySelector('[data-square="' + fromSq + '"]');
-      var toEl = boardEl.querySelector('[data-square="' + toSq + '"]');
-
-      if (!fromEl || !toEl) {
-        callback();
-        return;
-      }
-
-      var pieceEl = fromEl.querySelector('span[class*="text-2xl"], span[class*="md:text-4xl"]');
-      if (!pieceEl) {
-        callback();
-        return;
-      }
-
-      animating = true;
-
-      var fromRect = fromEl.getBoundingClientRect();
-      var toRect = toEl.getBoundingClientRect();
-
-      // Create flying clone
-      var clone = document.createElement('span');
-      clone.textContent = pieceEl.textContent;
-      clone.className = 'piece-clone';
-      clone.style.fontSize = getComputedStyle(pieceEl).fontSize;
-      clone.style.color = pieceEl.style.color;
-      clone.style.textShadow = pieceEl.style.textShadow;
-      clone.style.left = (fromRect.left + fromRect.width / 2) + 'px';
-      clone.style.top = (fromRect.top + fromRect.height / 2) + 'px';
-      clone.style.transform = 'translate(-50%, -50%)';
-      document.body.appendChild(clone);
-
-      // Hide the original piece
-      pieceEl.classList.add('piece-hidden');
-
-      // Trigger animation
-      requestAnimationFrame(function() {
-        var dx = toRect.left - fromRect.left;
-        var dy = toRect.top - fromRect.top;
-        clone.style.transform = 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px))';
-      });
-
-      clone.addEventListener('transitionend', function() {
-        clone.remove();
-        animating = false;
-        callback();
-      });
-
-      // Fallback in case transitionend doesn't fire
-      setTimeout(function() {
-        if (clone.parentNode) {
-          clone.remove();
-          animating = false;
-          callback();
-        }
-      }, 300);
-    }
-
-    // ── QUEUE UI ──
-    function updateQueueUI() {
-      if (!queueEnabled) {
-        queueBar.classList.add('hidden');
-        // Re-enable input
-        moveInput.disabled = false;
-        submitBtn.disabled = false;
-        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        return;
-      }
-
-      queueBar.classList.remove('hidden');
-
-      if (isMyTurn) {
-        queueBar.className = 'px-6 py-3 border-b border-emerald-500/30 bg-emerald-500/10 font-mono text-[11px] uppercase tracking-widest text-center queue-your-turn';
-        queueText.innerHTML = '<span class="text-emerald-400 font-bold">Your Turn</span> <span class="text-emerald-500/70">— Make a move!</span>';
-        moveInput.disabled = false;
-        submitBtn.disabled = false;
-        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-      } else {
-        queueBar.className = 'px-6 py-3 border-b border-amber-500/30 bg-amber-500/10 font-mono text-[11px] uppercase tracking-widest text-center';
-        queueText.innerHTML = '<span class="text-amber-400 font-bold">Position #' + (queuePosition + 1) + ' of ' + '</span><span class="text-amber-500/70"> — Wait for your turn</span>';
-        moveInput.disabled = true;
-        submitBtn.disabled = true;
-        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-      }
-    }
-
-    // ── SERVER STATUS INDICATOR ──
-    function setServerStatus(state) {
-      if (state === 'online') {
-        statusBadge.className = 'px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-emerald-400 text-[9px] font-bold tracking-wider transition-all duration-300';
-        statusBadge.innerHTML = '\u25CF SERVER: ONLINE';
-        pipelineEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> CONNECTED';
-        pipelineEl.className = 'font-mono text-[10px] font-bold text-emerald-400 flex items-center gap-2';
-        serverDownBar.classList.add('hidden');
-      } else {
-        statusBadge.className = 'px-3 py-1.5 bg-red-500/10 border border-red-500/30 rounded-full text-red-400 text-[9px] font-bold tracking-wider transition-all duration-300';
-        statusBadge.innerHTML = '\u25CF SERVER: OFFLINE';
-        pipelineEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> DISCONNECTED';
-        pipelineEl.className = 'font-mono text-[10px] font-bold text-red-400 flex items-center gap-2';
-        serverDownBar.classList.remove('hidden');
-      }
-    }
-
-    // ── SEND MOVE VIA WEBSOCKET ──
-    function sendMove(san) {
-      if (!socket || socket.readyState !== WebSocket.OPEN) {
-        showFeedback('Not connected to server', 'red');
-        return;
-      }
-      lastMoveSentAt = Date.now();
-      socket.send(JSON.stringify({ move: san }));
+    // ── RESULT TEXT ──
+    function resultText() {
+      if (chess.in_checkmate()) return (chess.turn() === 'w' ? 'BLACK' : 'WHITE') + ' WINS';
+      if (chess.in_stalemate()) return 'DRAW · STALEMATE';
+      if (chess.in_threefold_repetition()) return 'DRAW · REPETITION';
+      if (chess.insufficient_material()) return 'DRAW · MATERIAL';
+      if (chess.in_draw()) return 'DRAW';
+      return null;
     }
 
     // ── RENDER BOARD ──
@@ -969,19 +662,22 @@ socket.send(JSON.stringify(&#123;
       boardEl.innerHTML = '';
       var board = chess.board();
 
-      // Determine if king is in check
       var checkSquare = null;
-      if (chess.in_check && chess.in_check()) {
-        // Find the king that's in check
+      if (chess.in_check()) {
         var turnColor = chess.turn();
-        for (var r = 0; r < 8; r++) {
-          for (var c = 0; c < 8; c++) {
-            var p = board[r][c];
-            if (p && p.type === 'k' && p.color === turnColor) {
-              checkSquare = String.fromCharCode(97 + c) + (8 - r);
+        for (var r0 = 0; r0 < 8; r0++) {
+          for (var c0 = 0; c0 < 8; c0++) {
+            var p0 = board[r0][c0];
+            if (p0 && p0.type === 'k' && p0.color === turnColor) {
+              checkSquare = String.fromCharCode(97 + c0) + (8 - r0);
             }
           }
         }
+      }
+
+      var legalTargets = {};
+      if (selectedSquare) {
+        chess.moves({ square: selectedSquare, verbose: true }).forEach(function (m) { legalTargets[m.to] = true; });
       }
 
       for (var r = 0; r < 8; r++) {
@@ -996,39 +692,32 @@ socket.send(JSON.stringify(&#123;
           sq.style.backgroundColor = isLight ? '#1e293b' : '#0f172a';
           sq.dataset.square = sqName;
 
-          // Rank/file labels
           if (c === 0) {
-            var label = document.createElement('span');
-            label.className = 'absolute top-0.5 left-1 text-[8px] font-mono font-bold pointer-events-none';
-            label.style.color = isLight ? '#334155' : '#1e293b';
-            label.textContent = rank.toString();
-            sq.appendChild(label);
+            var rankLabel = document.createElement('span');
+            rankLabel.className = 'absolute top-0.5 left-1 text-[8px] font-mono font-bold pointer-events-none';
+            rankLabel.style.color = isLight ? '#334155' : '#1e293b';
+            rankLabel.textContent = rank.toString();
+            sq.appendChild(rankLabel);
           }
           if (r === 7) {
-            var label = document.createElement('span');
-            label.className = 'absolute bottom-0 right-1 text-[8px] font-mono font-bold pointer-events-none';
-            label.style.color = isLight ? '#334155' : '#1e293b';
-            label.textContent = file;
-            sq.appendChild(label);
+            var fileLabel = document.createElement('span');
+            fileLabel.className = 'absolute bottom-0 right-1 text-[8px] font-mono font-bold pointer-events-none';
+            fileLabel.style.color = isLight ? '#334155' : '#1e293b';
+            fileLabel.textContent = file;
+            sq.appendChild(fileLabel);
           }
 
-          // Last move highlight
-          if (sqName === lastMoveFrom || sqName === lastMoveTo) {
-            sq.classList.add('square-last-move');
-          }
+          if (sqName === lastMoveFrom || sqName === lastMoveTo) sq.classList.add('square-last-move');
+          if (sqName === checkSquare) sq.classList.add('square-check');
+          if (selectedSquare === sqName) sq.classList.add('square-selected');
+          if (legalTargets[sqName]) sq.classList.add('square-legal');
 
-          // Check highlight
-          if (sqName === checkSquare) {
-            sq.classList.add('square-check');
-          }
-
-          // Piece
           var piece = board[r][c];
           if (piece) {
             var pieceEl = document.createElement('span');
             var key = piece.color === 'w' ? piece.type.toUpperCase() : piece.type.toLowerCase();
             pieceEl.textContent = PIECE_GLYPHS[key];
-            pieceEl.className = 'text-2xl md:text-4xl pointer-events-none select-none';
+            pieceEl.className = 'chess-piece text-2xl md:text-4xl pointer-events-none select-none';
             pieceEl.style.color = piece.color === 'w' ? '#ffffff' : '#475569';
             pieceEl.style.textShadow = piece.color === 'w'
               ? '0 0 10px rgba(255,255,255,0.4), 0 1px 2px rgba(0,0,0,0.3)'
@@ -1036,22 +725,8 @@ socket.send(JSON.stringify(&#123;
             sq.appendChild(pieceEl);
           }
 
-          // Selected highlight
-          if (selectedSquare === sqName) {
-            sq.classList.add('square-selected');
-          }
-
-          // Legal move dots
-          if (selectedSquare) {
-            var moves = chess.moves({ square: selectedSquare, verbose: true });
-            if (moves.some(function(m) { return m.to === sqName; })) {
-              sq.classList.add('square-legal');
-            }
-          }
-
-          // Click handler
-          (function(name) {
-            sq.addEventListener('click', function() { handleSquareClick(name); });
+          (function (name) {
+            sq.addEventListener('click', function () { handleSquareClick(name); });
           })(sqName);
 
           boardEl.appendChild(sq);
@@ -1059,132 +734,166 @@ socket.send(JSON.stringify(&#123;
       }
     }
 
-    // ── SQUARE CLICK ──
-    function handleSquareClick(sqName) {
-      // Queue guard
-      if (queueEnabled && !isMyTurn) {
-        showFeedback('Wait for your turn! You are #' + (queuePosition + 1) + ' in the queue.', 'amber');
-        return;
+    // ── MOVE ANIMATION ──
+    function animateMove(fromSq, toSq, callback) {
+      var fromEl = boardEl.querySelector('[data-square="' + fromSq + '"]');
+      var toEl = boardEl.querySelector('[data-square="' + toSq + '"]');
+      var pieceEl = fromEl ? fromEl.querySelector('.chess-piece') : null;
+      if (!fromEl || !toEl || !pieceEl) { callback(); return; }
+
+      animating = true;
+      var done = false;
+      var fromRect = fromEl.getBoundingClientRect();
+      var toRect = toEl.getBoundingClientRect();
+
+      var clone = document.createElement('span');
+      clone.textContent = pieceEl.textContent;
+      clone.className = 'piece-clone';
+      clone.style.fontSize = getComputedStyle(pieceEl).fontSize;
+      clone.style.color = pieceEl.style.color;
+      clone.style.textShadow = pieceEl.style.textShadow;
+      clone.style.left = (fromRect.left + fromRect.width / 2) + 'px';
+      clone.style.top = (fromRect.top + fromRect.height / 2) + 'px';
+      clone.style.transform = 'translate(-50%, -50%)';
+      document.body.appendChild(clone);
+      pieceEl.classList.add('piece-hidden');
+
+      function finish() {
+        if (done) return;
+        done = true;
+        if (clone.parentNode) clone.parentNode.removeChild(clone);
+        animating = false;
+        callback();
       }
 
-      if (selectedSquare) {
-        var moves = chess.moves({ square: selectedSquare, verbose: true });
-        var target = moves.find(function(m) { return m.to === sqName; });
-        if (target) {
-          executeMove(target.san);
-        } else {
-          var piece = chess.get(sqName);
-          selectedSquare = (piece && piece.color === chess.turn()) ? sqName : null;
-        }
-      } else {
-        var piece = chess.get(sqName);
-        if (piece && piece.color === chess.turn()) {
-          selectedSquare = sqName;
-        }
-      }
-      renderBoard();
+      requestAnimationFrame(function () {
+        var dx = toRect.left - fromRect.left;
+        var dy = toRect.top - fromRect.top;
+        clone.style.transform = 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px))';
+      });
+      clone.addEventListener('transitionend', finish);
+      setTimeout(finish, 300); // fallback if transitionend never fires
     }
 
-    // ── EXECUTE MOVE ──
-    function executeMove(san) {
-      // Queue guard
-      if (queueEnabled && !isMyTurn) {
-        showFeedback('Wait for your turn!', 'amber');
-        return;
-      }
+    // ── PLAY A MOVE (SAN string or {from, to, promotion}) ──
+    function playMove(input) {
+      if (animating) return false;
+      var probe = chess.move(input, { sloppy: true });
+      if (!probe) return false;
+      chess.undo();
 
-      // Optimistic local update
-      var result = chess.move(san);
-      if (!result) {
-        showFeedback('Invalid move: ' + san, 'red');
-        return;
-      }
       selectedSquare = null;
-      lastMoveFrom = result.from;
-      lastMoveTo = result.to;
       renderBoard();
-      updateUI();
+      animateMove(probe.from, probe.to, function () {
+        var m = chess.move(input, { sloppy: true });
+        if (!m) { renderBoard(); updateUI(); return; }
+        lastMoveFrom = m.from;
+        lastMoveTo = m.to;
+        saveGame();
+        if (chess.in_check()) playSound('check');
+        else if (m.captured) playSound('capture');
+        else playSound('move');
+        renderBoard();
+        updateUI();
+      });
+      return true;
+    }
 
-      // Send to server
-      sendMove(san);
+    // ── SQUARE CLICK ──
+    function handleSquareClick(sqName) {
+      if (animating || chess.game_over()) return;
 
-      // Brief status flash
-      pipelineEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> SENDING';
-      pipelineEl.className = 'font-mono text-[10px] font-bold text-amber-400 flex items-center gap-2';
-      setTimeout(function() {
-        if (socket && socket.readyState === WebSocket.OPEN) {
-          pipelineEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> CONNECTED';
-          pipelineEl.className = 'font-mono text-[10px] font-bold text-emerald-400 flex items-center gap-2';
+      if (selectedSquare) {
+        var target = null;
+        chess.moves({ square: selectedSquare, verbose: true }).forEach(function (m) {
+          if (m.to === sqName && (!target || m.promotion === 'q')) target = m;
+        });
+        if (target) {
+          playMove({ from: target.from, to: target.to, promotion: target.promotion });
+          return;
         }
-      }, 1500);
+        var piece = chess.get(sqName);
+        selectedSquare = (piece && piece.color === chess.turn() && sqName !== selectedSquare) ? sqName : null;
+      } else {
+        var own = chess.get(sqName);
+        if (own && own.color === chess.turn()) selectedSquare = sqName;
+      }
+      renderBoard();
     }
 
     // ── UPDATE UI ──
     function updateUI() {
-      var turn = chess.turn() === 'w' ? 'WHITE' : 'BLACK';
-      turnEl.textContent = turn + ' TO MOVE';
-      fenEl.textContent = chess.fen();
-      var fenParts = chess.fen().split(' ');
-      moveNumEl.textContent = fenParts[5] || '1';
+      var history = chess.history();
+      var result = resultText();
 
-      if (chess.in_checkmate()) {
-        var winner = chess.turn() === 'w' ? 'BLACK' : 'WHITE';
-        resultEl.textContent = winner + ' WINS';
+      turnEl.textContent = result ? 'GAME OVER' : (chess.turn() === 'w' ? 'WHITE' : 'BLACK') + ' TO MOVE';
+      fenEl.textContent = chess.fen();
+      moveNumEl.textContent = chess.fen().split(' ')[5] || '1';
+      statMoves.textContent = history.length.toLocaleString();
+
+      if (result) {
+        resultEl.textContent = result;
         resultEl.className = 'font-mono text-[10px] font-bold text-amber-400';
-      } else if (chess.in_draw()) {
-        resultEl.textContent = 'DRAW';
-        resultEl.className = 'font-mono text-[10px] font-bold text-amber-400';
+        gameOverResult.textContent = result;
+        gameOverOverlay.classList.remove('hidden');
+        checkBanner.classList.add('hidden');
       } else {
         resultEl.textContent = 'IN PROGRESS';
         resultEl.className = 'font-mono text-[10px] font-bold text-slate-400';
+        gameOverOverlay.classList.add('hidden');
+        checkBanner.classList.toggle('hidden', !chess.in_check());
       }
 
       // PGN
-      var history = chess.history();
       if (history.length > 0) {
         var pgn = '';
         for (var i = 0; i < history.length; i += 2) {
-          var num = Math.floor(i / 2) + 1;
-          pgn += num + '. ' + history[i];
-          if (history[i + 1]) pgn += ' ' + history[i + 1] + ' ';
-          else pgn += ' ';
+          pgn += (Math.floor(i / 2) + 1) + '. ' + history[i] + (history[i + 1] ? ' ' + history[i + 1] : '') + ' ';
         }
         pgnEl.textContent = pgn.trim();
       } else {
-        pgnEl.textContent = 'No moves yet \u2014 be the first to play.';
+        pgnEl.textContent = 'No moves yet — make the first one.';
       }
+
+      renderMoveHistory(history);
+      undoBtn.disabled = history.length === 0;
+      undoBtn.classList.toggle('opacity-40', history.length === 0);
     }
 
-    // ── MOVE LOG ──
+    // ── MOVE HISTORY LIST ──
     function renderMoveHistory(moves) {
-      if (!moves || moves.length === 0) {
+      commitLog.innerHTML = '';
+      if (!moves.length) {
         commitLog.innerHTML = '<div class="p-3 bg-slate-800/30 rounded-lg border border-slate-700/30 text-center"><span class="font-mono text-[10px] text-slate-500">No moves yet</span></div>';
         return;
       }
-      commitLog.innerHTML = '';
-      var recent = moves.slice(-20).reverse();
-      recent.forEach(function(move, i) {
-        var idx = moves.length - i;
+      var start = Math.max(0, moves.length - 20);
+      for (var i = moves.length - 1; i >= start; i--) {
+        var idx = i + 1;
+        var isLatest = i === moves.length - 1;
         var entry = document.createElement('div');
-        entry.className = 'p-3 bg-slate-800/30 rounded-lg border border-slate-700/30 hover:border-blue-500/30 transition-colors';
-        var color = idx % 2 === 1 ? 'White' : 'Black';
-        entry.innerHTML = '<div class="flex items-center justify-between mb-1"><span class="font-mono text-[10px] font-bold text-white">\u265F ' + move + '</span><span class="font-mono text-[9px] text-slate-600">#' + idx + '</span></div><span class="font-mono text-[9px] text-slate-500">' + color + ' \u00B7 Move ' + Math.ceil(idx / 2) + '</span>';
+        entry.className = isLatest
+          ? 'p-3 bg-blue-950/30 rounded-lg border border-blue-500/20 transition-colors'
+          : 'p-3 bg-slate-800/30 rounded-lg border border-slate-700/30 hover:border-blue-500/30 transition-colors';
+
+        var head = document.createElement('div');
+        head.className = 'flex items-center justify-between mb-1';
+        var san = document.createElement('span');
+        san.className = 'font-mono text-[10px] font-bold ' + (isLatest ? 'text-blue-400' : 'text-white');
+        san.textContent = '♟ ' + moves[i];
+        var num = document.createElement('span');
+        num.className = 'font-mono text-[9px] ' + (isLatest ? 'text-blue-500' : 'text-slate-600');
+        num.textContent = '#' + idx;
+        head.appendChild(san);
+        head.appendChild(num);
+
+        var meta = document.createElement('span');
+        meta.className = 'font-mono text-[9px] text-slate-500';
+        meta.textContent = (idx % 2 === 1 ? 'White' : 'Black') + ' · Move ' + Math.ceil(idx / 2);
+
+        entry.appendChild(head);
+        entry.appendChild(meta);
         commitLog.appendChild(entry);
-      });
-    }
-
-    function addMoveEntry(san, idx) {
-      var placeholder = commitLog.querySelector('.text-center');
-      if (placeholder) placeholder.remove();
-
-      var entry = document.createElement('div');
-      entry.className = 'p-3 bg-blue-950/30 rounded-lg border border-blue-500/20 transition-colors';
-      var color = idx % 2 === 1 ? 'White' : 'Black';
-      entry.innerHTML = '<div class="flex items-center justify-between mb-1"><span class="font-mono text-[10px] font-bold text-blue-400">\u265F ' + san + '</span><span class="font-mono text-[9px] text-blue-500">#' + idx + '</span></div><span class="font-mono text-[9px] text-slate-500">' + color + ' \u00B7 Move ' + Math.ceil(idx / 2) + '</span>';
-      commitLog.prepend(entry);
-
-      while (commitLog.children.length > 20) {
-        commitLog.removeChild(commitLog.lastChild);
       }
     }
 
@@ -1193,49 +902,50 @@ socket.send(JSON.stringify(&#123;
       var colorMap = { red: '#f87171', blue: '#60a5fa', emerald: '#34d399', amber: '#fbbf24' };
       feedback.textContent = msg;
       feedback.style.color = colorMap[color] || '#94a3b8';
-      feedback.className = 'mt-3 font-mono text-xs';
       feedback.classList.remove('hidden');
-      setTimeout(function() { feedback.classList.add('hidden'); }, 6000);
+      if (feedbackTimer) clearTimeout(feedbackTimer);
+      feedbackTimer = setTimeout(function () { feedback.classList.add('hidden'); }, 4000);
     }
 
-    // ── INPUT HANDLER ──
-    submitBtn.addEventListener('click', function() {
-      if (queueEnabled && !isMyTurn) {
-        showFeedback('Wait for your turn!', 'amber');
-        return;
-      }
+    // ── CONTROLS ──
+    submitBtn.addEventListener('click', function () {
       var san = moveInput.value.trim();
       if (!san) return;
-      var result = chess.move(san);
-      if (!result) {
-        showFeedback('Illegal move: ' + san, 'red');
-        return;
-      }
-      chess.undo();
-      executeMove(san);
+      if (chess.game_over()) { showFeedback('The game is over. Start a new game.', 'amber'); return; }
+      if (!playMove(san)) { showFeedback('Illegal move: ' + san, 'red'); return; }
       moveInput.value = '';
     });
-
-    moveInput.addEventListener('keydown', function(e) {
+    moveInput.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') submitBtn.click();
     });
 
-    // ── VOTE RESTART ──
-    function sendVoteRestart() {
-      if (!socket || socket.readyState !== WebSocket.OPEN) {
-        showFeedback('Not connected to server', 'red');
-        return;
-      }
-      socket.send(JSON.stringify({ action: 'vote_restart' }));
-      showFeedback('You voted to restart the game', 'blue');
-    }
+    undoBtn.addEventListener('click', function () {
+      if (animating || !chess.undo()) return;
+      selectedSquare = null;
+      syncLastMove();
+      saveGame();
+      renderBoard();
+      updateUI();
+    });
 
-    voteRestartBtn.addEventListener('click', sendVoteRestart);
-    voteRestartInline.addEventListener('click', sendVoteRestart);
+    function newGame() {
+      if (animating) return;
+      chess.reset();
+      selectedSquare = null;
+      lastMoveFrom = null;
+      lastMoveTo = null;
+      saveGame();
+      renderBoard();
+      updateUI();
+      showFeedback('New game started', 'blue');
+    }
+    resetBtn.addEventListener('click', newGame);
+    newGameBtn.addEventListener('click', newGame);
 
     // ── INIT ──
+    loadGame();
     renderBoard();
     updateUI();
-    connectWebSocket();
+  })();
   </script>
 </MainLayout>

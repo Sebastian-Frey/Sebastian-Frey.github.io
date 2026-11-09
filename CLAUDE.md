@@ -30,10 +30,19 @@ npm run preview  # preview built site
   - `biasbreaker.astro` — LLM news bias neutralization
   - `latent-discovery.astro` — Clustering comparison (K-Means/GMM/HDBSCAN)
   - `sentinel-ltv.astro` — XGBoost churn prediction
-  - `eternal-chess.astro` — Live multiplayer chess via WebSocket
-  - `wiki-pulse.astro` — Real-time Wikipedia topic clustering dashboard (UMAP scatter + live WS)
+  - `eternal-chess.astro` — Multiplayer chess project page; board now runs as a local chess.js sandbox (no server)
+  - `wiki-pulse.astro` — Wikipedia topic clustering dashboard (UMAP scatter); now renders a bundled example snapshot (no server)
 - `src/styles/global.css` — Tailwind imports + base styles
 - `public/images/projects/` — Project screenshots and visualizations
+
+## Backend Status (since 2026-11-09)
+
+The DigitalOcean droplet was repurposed, so the Eternal Chess and Wiki Pulse backends are **offline**. Both project pages are fully static and open no network connections:
+
+- `eternal-chess.astro` — local two-player sandbox (chess.js from cdnjs, game saved in `localStorage['ec_local_moves']`)
+- `wiki-pulse.astro` — renders a deterministic, clearly labeled example snapshot generated in the page script (`buildExampleSnapshot()`), same shape as the old WS `init` payload
+
+The `server/` code stays in the repo as project source. The protocol docs below describe the original live versions.
 
 ## Eternal Chess (Server)
 
@@ -60,22 +69,21 @@ The frontend (`eternal-chess.astro`) and server communicate via JSON messages:
 
 ### Deployment Status
 
-- DNS: `chess.itssebastianfrey.com` → A record → `64.226.115.193` (needs to be set up)
-- SSL: Caddy auto-provisions Let's Encrypt certificates
-- Frontend WS URL: set via `PUBLIC_WS_URL` in `.env` (build-time injection via `define:vars`)
+- Offline: the droplet has been repurposed (see Backend Status above)
+- The frontend no longer reads `PUBLIC_WS_URL`; the CI build no longer sets it
 
 ## Environment Variables (.env — gitignored)
 
 ```
 GITHUB_TOKEN=...          # GitHub PAT for game state sync (server-side only)
 GITHUB_REPO=...           # e.g. Sebastian-Frey/eternal-chess
-PUBLIC_WS_URL=...         # WebSocket URL injected into Eternal Chess at build time
-PUBLIC_WIKI_WS_URL=...    # WebSocket URL injected into Wiki Pulse at build time
+PUBLIC_WS_URL=...         # unused since the backends went offline
+PUBLIC_WIKI_WS_URL=...    # unused since the backends went offline
 ```
 
-## Wiki Pulse (WebSocket Protocol)
+## Wiki Pulse (WebSocket Protocol, historical)
 
-The frontend (`wiki-pulse.astro`) connects to the Wiki Pulse backend via WebSocket:
+The live version of `wiki-pulse.astro` connected to the Wiki Pulse backend via WebSocket:
 
 | Direction | Type | When | Payload |
 |-----------|------|------|---------|
@@ -84,7 +92,7 @@ The frontend (`wiki-pulse.astro`) connects to the Wiki Pulse backend via WebSock
 | Server → Client | `snapshot` | New cluster data | `{type, period, period_start, clusters, members}` |
 | Client → Server | `subscribe` | Period change | `{type: "subscribe", period: "day|week|month"}` |
 
-The WS URL is set via `PUBLIC_WIKI_WS_URL` in `.env` (build-time injection via `define:vars`).
+The WS URL used to be injected via `PUBLIC_WIKI_WS_URL`; the static page no longer reads it.
 
 ## Key Conventions
 
@@ -93,7 +101,7 @@ The WS URL is set via `PUBLIC_WIKI_WS_URL` in `.env` (build-time injection via `
 - Project detail pages use a consistent nav bar (fixed, glassmorphism on scroll, "Projects" highlighted).
 - The server IP must never appear in source code — use `PUBLIC_WS_URL` env var.
 - Astro `<script is:inline>` blocks cannot use template expressions with curly braces in HTML — use `&#123;` / `&#125;` HTML entities in `<pre>` code display blocks.
-- The Eternal Chess project description in `config.ts` still references the old GitOps approach — update it when going live with WebSocket.
+- Eternal Chess and Wiki Pulse must stay error-free without a backend: no WebSocket, fetch, or permission prompts on load.
 
 ## Design Language
 

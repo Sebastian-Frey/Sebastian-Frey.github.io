@@ -1,9 +1,8 @@
 ---
 import MainLayout from "../../layouts/MainLayout.astro";
-const wikiWsUrl = import.meta.env.PUBLIC_WIKI_WS_URL || "ws://localhost:8000/ws";
 ---
 
-<MainLayout title="Wiki Pulse — Live Dashboard">
+<MainLayout title="Wiki Pulse">
 
   <!-- NAV -->
   <nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
@@ -22,9 +21,9 @@ const wikiWsUrl = import.meta.env.PUBLIC_WIKI_WS_URL || "ws://localhost:8000/ws"
         <a href="https://github.com/Sebastian-Frey" target="_blank" class="text-slate-400 hover:text-slate-900 transition-colors">
           <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.042-1.416-4.042-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
         </a>
-        <div id="wp-status" class="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-full text-[9px] font-bold tracking-wider">
-          <span id="wp-dot" class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-          <span id="wp-status-text" class="text-slate-400">CONNECTING</span>
+        <div class="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 border border-amber-200 rounded-full text-[9px] font-bold tracking-wider">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+          <span class="text-amber-700">ARCHIVED</span>
         </div>
       </div>
     </div>
@@ -385,7 +384,7 @@ const wikiWsUrl = import.meta.env.PUBLIC_WIKI_WS_URL || "ws://localhost:8000/ws"
               </div>
               <h3 class="text-slate-900 font-black text-2xl uppercase tracking-tight mb-2">Name each cluster</h3>
               <p class="text-slate-500 font-mono text-xs leading-relaxed">
-                For each cluster we pick the words that appear <strong class="text-slate-800">mostly inside that cluster and rarely elsewhere</strong> (c-TF-IDF). That becomes the human-readable label you see on each topic card. Now scroll down and watch it live.
+                For each cluster we pick the words that appear <strong class="text-slate-800">mostly inside that cluster and rarely elsewhere</strong> (c-TF-IDF). That becomes the human-readable label you see on each topic card. Scroll down to explore an example snapshot.
               </p>
             </div>
           </div>
@@ -426,8 +425,17 @@ const wikiWsUrl = import.meta.env.PUBLIC_WIKI_WS_URL || "ws://localhost:8000/ws"
         <strong class="text-slate-800">A real-time unsupervised topic discovery dashboard.</strong>
         This pipeline ingests Wikipedia's live edit stream (~150 edits/min), computes 384-dim sentence embeddings with MiniLM-L6-v2,
         clusters semantically related articles using HDBSCAN, and projects the topic landscape to 2D via Procrustes-aligned UMAP.
-        Everything below is live &mdash; the data refreshes every 30 seconds from a production backend.
+        In production, the dashboard received a fresh snapshot every 30 seconds over a WebSocket.
       </p>
+    </div>
+
+    <!-- ARCHIVE NOTICE -->
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl font-mono text-xs text-amber-900 leading-relaxed">
+      <span class="self-start sm:self-auto shrink-0 px-2.5 py-1 bg-amber-400/20 border border-amber-300 rounded-full text-[9px] font-black uppercase tracking-widest text-amber-800">Example snapshot</span>
+      <span>
+        The live backend has been retired. The dashboard below uses the original rendering code on a <strong>bundled example snapshot</strong>.
+        The numbers and clusters are illustrative, not a recording of a real day.
+      </span>
     </div>
 
     <!-- GAUGE CARDS -->
@@ -454,22 +462,12 @@ const wikiWsUrl = import.meta.env.PUBLIC_WIKI_WS_URL || "ws://localhost:8000/ws"
       </div>
     </div>
 
-    <!-- PERIOD SELECTOR -->
-    <div class="flex justify-center items-center gap-3 mb-6">
-      <span class="font-mono text-xs text-slate-400 uppercase tracking-widest font-bold">Period:</span>
-      <div class="flex gap-2 font-mono text-sm font-bold">
-        <button class="wp-period px-5 py-2 rounded-full bg-blue-600 text-white transition-all shadow-sm" data-p="day">Day</button>
-        <button class="wp-period px-5 py-2 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-all" data-p="week">Week</button>
-        <button class="wp-period px-5 py-2 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-all" data-p="month">Month</button>
-      </div>
-    </div>
-
     <!-- ROW: SCATTER + TREEMAP -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-4">
       <!-- UMAP Scatter + Side Legend -->
       <div class="lg:col-span-7 bg-white rounded-xl border border-slate-100 p-4 shadow-md">
         <div class="flex items-center gap-2 mb-3">
-          <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
           <span class="font-mono text-xs text-slate-700 uppercase tracking-[0.2em] font-black">UMAP Projection</span>
         </div>
         <div class="flex gap-4">
@@ -587,21 +585,13 @@ const wikiWsUrl = import.meta.env.PUBLIC_WIKI_WS_URL || "ws://localhost:8000/ws"
     </div>
   </main>
 
-  <script define:vars={{ wikiWsUrl }}>
-    window.__WP_WS = wikiWsUrl;
-  </script>
-
   <script is:inline>
   (function () {
     "use strict";
 
-    var WS_URL = window.__WP_WS || "ws://localhost:8000/ws";
     // IBM Carbon palette: high contrast, corporate, 7 distinct colors
     var C = ["#6929c4","#1192e8","#005d5d","#9f1853","#fa4d56","#198038","#002d9c","#b28600","#8a3ffc","#007d79","#ee538b","#0f62fe"];
     var MAX_VIS_CLUSTERS = 7; // only show top 7 in scatter/legend to reduce clutter
-    var socket, reconn = 0, period = "day";
-    var pendingPeriod = null; // period the user just clicked, waiting for server snapshot
-    var retryTimer = null;    // timer for rate-limited resubscribe
     var clusters = [], members = [], activity = {}, highlighted = -1;
     var topClusterIds = new Set(); // IDs of top 7 clusters by size
 
@@ -615,11 +605,72 @@ const wikiWsUrl = import.meta.env.PUBLIC_WIKI_WS_URL || "ws://localhost:8000/ws"
       return { w: r.width, h: r.height, ctx: ctx };
     }
 
-    // ─── STATUS ───
-    function setStatus(on) {
-      var d = $("wp-dot"), t = $("wp-status-text");
-      if (d) d.className = "w-1.5 h-1.5 rounded-full " + (on ? "bg-emerald-500 animate-pulse" : "bg-slate-300");
-      if (t) { t.textContent = on ? "LIVE" : "OFFLINE"; t.className = on ? "text-emerald-600" : "text-slate-400"; }
+    // ═══════════════════════════════════════════════
+    // EXAMPLE SNAPSHOT (the live backend is retired)
+    // Same shape as the old WebSocket `init` payload. Illustrative only:
+    // article positions, edit counts and hourly activity come from a
+    // seeded PRNG, so the page looks the same on every load.
+    // ═══════════════════════════════════════════════
+    var EXAMPLE_STATS = { edits_per_min: 150, active_articles: 9420, cluster_count: 7, embedded_articles: 8615 };
+
+    var EXAMPLE_CLUSTERS = [
+      { label: "Taylor Swift", terms: ["album","tour","single","billboard"], cx: 2.0, cy: 7.4, peak: 20,
+        titles: ["Taylor Swift","Beyoncé","The Eras Tour","Billie Eilish","Sabrina Carpenter","Kendrick Lamar","Billboard Hot 100","Dua Lipa","Olivia Rodrigo","Bad Bunny","Coldplay","The Beatles","Eurovision Song Contest","Ariana Grande","Grammy Award for Album of the Year","Harry Styles","Adele","Rihanna"] },
+      { label: "Premier League", terms: ["club","season","goals","league"], cx: 7.8, cy: 7.2, peak: 17,
+        titles: ["Premier League","Lionel Messi","Cristiano Ronaldo","Erling Haaland","Real Madrid CF","FC Barcelona","Liverpool F.C.","Manchester City F.C.","UEFA Champions League","Arsenal F.C.","Kylian Mbappé","FIFA World Cup","Bundesliga","Jude Bellingham","Chelsea F.C.","Mohamed Salah","Bukayo Saka"] },
+      { label: "Large language model", terms: ["model","neural","training","transformer"], cx: 4.8, cy: 1.7, peak: 15,
+        titles: ["Large language model","ChatGPT","Transformer (deep learning architecture)","Artificial intelligence","Machine learning","Deep learning","Nvidia","OpenAI","Generative artificial intelligence","Neural network (machine learning)","Python (programming language)","Reinforcement learning","Attention Is All You Need","Diffusion model","GPU"] },
+      { label: "James Webb Space Telescope", terms: ["orbit","telescope","nasa","mission"], cx: 7.0, cy: 2.3, peak: 18,
+        titles: ["James Webb Space Telescope","Black hole","Artemis program","SpaceX Starship","International Space Station","Mars","Exoplanet","Jupiter","Hubble Space Telescope","Voyager 1","Milky Way","Moon","Saturn"] },
+      { label: "Marvel Cinematic Universe", terms: ["film","series","box","office"], cx: 3.7, cy: 5.9, peak: 21,
+        titles: ["Marvel Cinematic Universe","Avengers: Endgame","Spider-Man","Dune (2021 film)","Oppenheimer (film)","Christopher Nolan","The Lord of the Rings (film series)","Star Wars","Academy Awards","Barbie (film)","Stranger Things","Game of Thrones"] },
+      { label: "Roman Empire", terms: ["empire","emperor","dynasty","war"], cx: 1.6, cy: 2.7, peak: 13,
+        titles: ["Roman Empire","Byzantine Empire","Julius Caesar","Augustus","Ottoman Empire","Holy Roman Empire","Charlemagne","Napoleon","Ancient Egypt","Alexander the Great","Mongol Empire"] },
+      { label: "Formula One", terms: ["grand","prix","driver","circuit"], cx: 8.9, cy: 5.4, peak: 14,
+        titles: ["Formula One","Max Verstappen","Lewis Hamilton","Lando Norris","Charles Leclerc","Scuderia Ferrari","McLaren","Red Bull Racing","Monaco Grand Prix","Ayrton Senna"] }
+    ];
+
+    function buildExampleSnapshot() {
+      // mulberry32: tiny deterministic PRNG
+      var seed = 20260410;
+      function rand() {
+        seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+        var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      }
+      function gauss() { return Math.sqrt(-2 * Math.log(1 - rand())) * Math.cos(2 * Math.PI * rand()); }
+      function pad2(n) { return (n < 10 ? "0" : "") + n; }
+
+      var outClusters = [], outMembers = [], outActivity = {};
+      for (var i = 0; i < EXAMPLE_CLUSTERS.length; i++) {
+        var src = EXAMPLE_CLUSTERS[i], sx = 0, sy = 0, total = 0;
+        for (var j = 0; j < src.titles.length; j++) {
+          var edits = j === 0 ? 38 + Math.floor(rand() * 20) : 2 + Math.floor(rand() * rand() * 30);
+          var x = src.cx + gauss() * 0.55, y = src.cy + gauss() * 0.5;
+          outMembers.push({ title: src.titles[j], cluster_id: i, umap_x: x, umap_y: y, edit_count: edits });
+          sx += x; sy += y; total += edits;
+        }
+        // Hourly activity: diurnal curve peaking at `peak` UTC, plus noise
+        var hours = [];
+        for (var h = 0; h < 24; h++) {
+          var dist = Math.min(Math.abs(h - src.peak), 24 - Math.abs(h - src.peak));
+          var curve = 0.35 + Math.exp(-(dist * dist) / 18);
+          hours.push({ hour: pad2(h) + ":00", edits: Math.max(1, Math.round((total / 10) * curve * (0.7 + rand() * 0.6))) });
+        }
+        outActivity[i] = hours;
+        outClusters.push({
+          cluster_id: i,
+          label: src.label,
+          size: src.titles.length,
+          rep_titles: src.titles.slice(0, 3),
+          top_terms: src.terms,
+          momentum: total / 24,
+          centroid_x: sx / src.titles.length,
+          centroid_y: sy / src.titles.length
+        });
+      }
+      return { clusters: outClusters, members: outMembers, activity: outActivity };
     }
 
     // ─── STATS ───
@@ -1259,53 +1310,6 @@ const wikiWsUrl = import.meta.env.PUBLIC_WIKI_WS_URL || "ws://localhost:8000/ws"
       hmCv.addEventListener("mouseleave", function() { $("hm-tooltip").classList.add("hidden"); });
     }
 
-    // ─── PERIOD TOGGLE ───
-    function setLoadingState(p) {
-      // Optimistic clear: drop stale data immediately so user sees response
-      clusters = []; members = []; activity = {}; topClusterIds = new Set(); highlighted = -1;
-      var e = $("umap-empty");
-      if (e) {
-        e.style.display = "flex";
-        var span = e.querySelector("span");
-        if (span) span.textContent = "Loading " + p + "\u2026";
-      }
-      var ce = $("cluster-empty");
-      if (ce) {
-        ce.style.display = "";
-        ce.textContent = "Loading " + p + "\u2026";
-      }
-      var leg = $("umap-legend"); if (leg) leg.innerHTML = "";
-      // Clear canvases
-      if (umapCv) { var us = sizeC(umapCv); us.ctx.fillStyle = "#f8fafc"; us.ctx.fillRect(0,0,us.w,us.h); }
-      var tmCv = $("treemap-canvas"); if (tmCv) { var ts = sizeC(tmCv); ts.ctx.fillStyle = "#f8fafc"; ts.ctx.fillRect(0,0,ts.w,ts.h); }
-      var hmCv = $("heatmap-canvas"); if (hmCv) { var hs = sizeC(hmCv); hs.ctx.fillStyle = "#ffffff"; hs.ctx.fillRect(0,0,hs.w,hs.h); }
-      var grid = $("cluster-grid"); if (grid) grid.innerHTML = "";
-    }
-
-    function sendSubscribe(p) {
-      if (socket && socket.readyState === 1) {
-        socket.send(JSON.stringify({type:"subscribe", period:p}));
-      }
-    }
-
-    var pBtns = document.querySelectorAll(".wp-period");
-    for (var pi = 0; pi < pBtns.length; pi++) {
-      pBtns[pi].addEventListener("click", function() {
-        var p = this.getAttribute("data-p");
-        if (p === period && !pendingPeriod) return;
-        if (p === pendingPeriod) return; // already waiting on this exact period
-        period = p;
-        pendingPeriod = p;
-        if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
-        for (var bi = 0; bi < pBtns.length; bi++) {
-          pBtns[bi].className = "wp-period px-5 py-2 rounded-full transition-all " +
-            (pBtns[bi].getAttribute("data-p") === p ? "bg-blue-600 text-white shadow-sm animate-pulse" : "bg-slate-100 text-slate-500 hover:bg-slate-200");
-        }
-        setLoadingState(p);
-        sendSubscribe(p);
-      });
-    }
-
     // ─── FULL RENDER ───
     function renderAll() {
       computeTopClusters();
@@ -1315,58 +1319,13 @@ const wikiWsUrl = import.meta.env.PUBLIC_WIKI_WS_URL || "ws://localhost:8000/ws"
     // ─── RESIZE ───
     window.addEventListener("resize", function() { renderAll(); });
 
-    // ─── WEBSOCKET ───
-    function connect() {
-      try { socket = new WebSocket(WS_URL); } catch(e) { return recon(); }
-      socket.onopen = function() { reconn = 0; setStatus(true); };
-      socket.onmessage = function(e) {
-        var d; try { d = JSON.parse(e.data); } catch(_) { return; }
-        if (d.type === "init") {
-          if (d.stats) setStats(d.stats);
-          if (d.snapshot) {
-            clusters = d.snapshot.clusters || [];
-            members = d.snapshot.members || [];
-            activity = d.snapshot.activity || {};
-            renderAll();
-          }
-        } else if (d.type === "stats") {
-          setStats(d);
-        } else if (d.type === "snapshot") {
-          // Ignore snapshots for a period the user has since switched away from
-          if (d.period && pendingPeriod && d.period !== pendingPeriod) return;
-          if (d.period) period = d.period;
-          clusters = d.clusters || [];
-          members = d.members || [];
-          activity = d.activity || {};
-          // Reset button pulse + empty-state captions
-          if (pendingPeriod === period) pendingPeriod = null;
-          if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
-          var pBtns2 = document.querySelectorAll(".wp-period");
-          for (var bi2 = 0; bi2 < pBtns2.length; bi2++) {
-            pBtns2[bi2].className = "wp-period px-5 py-2 rounded-full transition-all " +
-              (pBtns2[bi2].getAttribute("data-p") === period ? "bg-blue-600 text-white shadow-sm" : "bg-slate-100 text-slate-500 hover:bg-slate-200");
-          }
-          var e1 = $("umap-empty");
-          if (e1) { var sp = e1.querySelector("span"); if (sp) sp.textContent = "Waiting for data\u2026"; }
-          var e2 = $("cluster-empty"); if (e2) e2.textContent = "Waiting for cluster data\u2026";
-          renderAll();
-        } else if (d.type === "error" && d.code === "rate_limited") {
-          // Queue a retry for the most recently requested period
-          if (retryTimer) clearTimeout(retryTimer);
-          var waitMs = Math.max(100, Math.min(5000, (Number(d.retry_after) || 1) * 1000));
-          retryTimer = setTimeout(function() {
-            retryTimer = null;
-            if (pendingPeriod) sendSubscribe(pendingPeriod);
-          }, waitMs + 50);
-        }
-      };
-      socket.onclose = function() { setStatus(false); recon(); };
-      socket.onerror = function() { setStatus(false); };
-    }
-    function recon() { var t = Math.min(1000 * Math.pow(2, reconn), 30000); reconn++; setTimeout(connect, t); }
-
-    // ─── BOOT ───
-    connect();
+    // ─── BOOT (static example snapshot, no network) ───
+    var snap = buildExampleSnapshot();
+    clusters = snap.clusters;
+    members = snap.members;
+    activity = snap.activity;
+    setStats(EXAMPLE_STATS);
+    renderAll();
   })();
   </script>
 

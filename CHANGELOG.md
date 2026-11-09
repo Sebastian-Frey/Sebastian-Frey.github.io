@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+- **Eternal Chess and Wiki Pulse are now static pages** — The DigitalOcean droplet was repurposed, so both backends are offline. Before this change both pages kept retrying WebSocket connections and filled the console with errors. Neither page opens a network connection now.
+  - *Eternal Chess* (`src/pages/projects/eternal-chess.astro`): the board is a local two-player sandbox in the browser. chess.js validates moves. Click-to-move, SAN input (also sloppy `e2e4`), slide animations, sounds, check banner and game-over overlay still work. New **Undo** and **New Game** buttons. The game is saved in `localStorage['ec_local_moves']`. Removed: the WebSocket client, the queue bar, vote-to-restart, the latency/viewers metrics, the server-offline bar, and the notification permission prompt on page load. If the chess.js CDN fails, the page shows a message instead of throwing. Copy now describes the multiplayer version in the past tense.
+  - *Wiki Pulse* (`src/pages/projects/wiki-pulse.astro`): the dashboard renders a bundled example snapshot with 7 topic clusters and ~100 real article titles. Positions, edit counts and hourly activity come from a seeded PRNG, so the page looks the same on every load. An "Example snapshot" notice says the data is illustrative. The scatter, treemap, heatmap, sparklines, cards, tooltips and tutorial are unchanged. Removed: the WebSocket client, the Day/Week/Month selector, and the "CONNECTING/LIVE" badge (now "ARCHIVED").
+  - `.github/workflows/deploy.yml`: dropped the unused `PUBLIC_WS_URL` / `PUBLIC_WIKI_WS_URL` build env.
+  - `CLAUDE.md`: new "Backend Status" section; the protocol docs are marked historical.
+
 ### Fixed
 - **Social link slugs in `src/config.ts`** — LinkedIn had `sebastian-frey` (one dash) and GitHub had `Sebastian--Frey` (two dashes); both were inverted. Corrected to LinkedIn `sebastian--frey` (two dashes) and GitHub `Sebastian-Frey` (one dash). Affects the icon links in `Hero.astro` and `Footer.astro`.
 
